@@ -27,3 +27,6 @@ coverage/
 
 # OpenCode config (agentes, skills, MCP, node_modules)
 .opencode/
+
+# Assignment rubric (private)
+parcial_api_rest_express_tema_libre.pdf
