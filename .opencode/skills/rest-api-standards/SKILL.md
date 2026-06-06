@@ -11,21 +11,21 @@ compatibility: opencode
 
 ## Naming conventions
 
-- Rutas en `kebab-case`: `/api/productos`, `/api/reservas`, `/api/usuarios/:id`
-- Sin verbos en la URL: `/api/crear-producto` → `/api/productos` (POST)
+- Rutas en `kebab-case`: `/api/v1/productos`, `/api/v1/reservas`, `/api/v1/usuarios/:id`
+- Sin verbos en la URL: `/api/v1/crear-producto` → `/api/v1/productos` (POST)
 - Sin guiones bajos en rutas
 - Nombres de recursos en plural para colecciones
-- Parámetros de ruta con `:` (`/api/productos/:id`)
+- Parámetros de ruta con `:` (`/api/v1/productos/:id`)
 
 ## HTTP verbs & status codes
 
 | Operación | Método | Ruta | Status code éxito |
 |-----------|--------|------|-------------------|
-| Crear | POST | `/api/recursos` | 201 Created |
-| Listar | GET | `/api/recursos` | 200 OK |
-| Obtener | GET | `/api/recursos/:id` | 200 OK |
-| Actualizar | PUT/PATCH | `/api/recursos/:id` | 200 OK |
-| Eliminar (soft) | DELETE | `/api/recursos/:id` | 200 OK (con `active: false`) |
+| Crear | POST | `/api/v1/recursos` | 201 Created |
+| Listar | GET | `/api/v1/recursos` | 200 OK |
+| Obtener | GET | `/api/v1/recursos/:id` | 200 OK |
+| Actualizar | PUT/PATCH | `/api/v1/recursos/:id` | 200 OK |
+| Eliminar (soft) | DELETE | `/api/v1/recursos/:id` | 200 OK (con `active: false`) |
 
 Status codes comunes:
 - `200` — Éxito (GET, PUT, PATCH, DELETE)
@@ -90,11 +90,12 @@ const errorHandler = (err, req, res, next) => {
 };
 ```
 
-## API versioning (opcional)
+## API versioning (obligatorio en este proyecto)
 
-- Para proyectos pequeños o académicos, se puede omitir el versionado (usar `/api/` directamente)
-- Si se versiona, usar prefijo `/api/v1/` en todas las rutas (ej. `/api/v1/productos`)
+- **Este proyecto usa obligatoriamente el prefijo `/api/v1/` en todas las rutas.**
+- No se admite el uso directo de `/api/` sin versión.
 - El `app.js` monta routers con `app.use('/api/v1/productos', productosRouter)`
+- Ejemplo: `POST /api/v1/auth/register`, `GET /api/v1/animales`, `GET /api/v1/health`
 
 ## Pagination
 
@@ -106,6 +107,6 @@ const errorHandler = (err, req, res, next) => {
 
 | Método | Ruta | Acceso |
 |--------|------|--------|
-| POST | `/api/auth/register` | Público |
-| POST | `/api/auth/login` | Público |
-| GET | `/api/auth/profile` | Autenticado |
+| POST | `/api/v1/auth/register` | Público |
+| POST | `/api/v1/auth/login` | Público |
+| GET | `/api/v1/auth/profile` | Autenticado |

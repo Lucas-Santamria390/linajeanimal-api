@@ -23,8 +23,8 @@
 
 ## Non-negotiable requirements
 
-- **Auth routes**: `POST /api/auth/register` (public), `POST /api/auth/login` (public), `GET /api/auth/profile` (auth required)
-- **Health check**: `GET /api/health` or similar
+- **Auth routes**: `POST /api/v1/auth/register` (public), `POST /api/v1/auth/login` (public), `GET /api/v1/auth/profile` (auth required)
+- **Health check**: `GET /api/v1/health` or similar
 - **Role middleware**: test 3 cases — authenticated allowed, authenticated denied (wrong role, 403), unauthenticated rejected (401)
 - **Soft deletes**: `active: Boolean` field, no `deleteOne`/`findByIdAndDelete`/`deleteMany` — use `findByIdAndUpdate` with `{ active: false }`
 - **Centralized error handler**: single middleware catching all errors, no stack traces in production

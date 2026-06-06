@@ -8,7 +8,13 @@
     "start": "node server.js",
     "docker": "docker compose up --build"
   },
-  "keywords": ["api", "rest", "express", "mongoose", "genealogy"],
+  "keywords": [
+    "api",
+    "rest",
+    "express",
+    "mongoose",
+    "genealogy"
+  ],
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -20,7 +26,9 @@
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

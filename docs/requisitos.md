@@ -79,7 +79,7 @@ que necesite mantener un registro estructurado de animales con trazabilidad gene
 
 | ID     | Descripción                                                                 | Prioridad |
 |--------|-----------------------------------------------------------------------------|-----------|
-| RF-32  | Endpoint de health check (`GET /api/health`)                                | Alta      |
+| RF-32  | Endpoint de health check (`GET /api/v1/health`)                              | Alta      |
 | RF-33  | Seed data para desarrollo (usuarios, especies, razas, animales)             | Alta      |
 | RF-34  | Documentación de la API (Postman collection o Swagger)                      | Alta      |
 | RF-35  | Sanitizar entrada para prevenir inyección NoSQL usando express-validator o mongo-sanitize | Alta      |

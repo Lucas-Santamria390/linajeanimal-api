@@ -50,7 +50,7 @@ npm install --save-dev nodemon
 | 1.2 | Crear `config/env.js` — validación de variables de entorno  | `config/env.js`              | 10 min     |
 | 1.3 | Crear `app.js` — configuración de Express (middlewares globales) | `app.js`                 | 15 min     |
 | 1.4 | Crear `server.js` — solo `listen()`                         | `server.js`                  | 5 min      |
-| 1.5 | Health check endpoint (`GET /api/health`)                   | `routes/` + `controllers/`   | 10 min     |
+| 1.5 | Health check endpoint (`GET /api/v1/health`)                   | `routes/` + `controllers/`   | 10 min     |
 
 **Detalle de app.js:**
 ```javascript
@@ -117,8 +117,8 @@ npm install --save-dev nodemon
 | 3.7 | Registrar rutas en `app.js`                        | `app.js`                                      | 5 min      |
 
 **Endpoints a implementar:**
-- `POST /api/especies`, `GET /api/especies`, `GET /api/especies/:id`, `PUT /api/especies/:id`, `DELETE /api/especies/:id`
-- `POST /api/razas`, `GET /api/razas`, `GET /api/razas/:id`, `PUT /api/razas/:id`, `DELETE /api/razas/:id`
+- `POST /api/v1/especies`, `GET /api/v1/especies`, `GET /api/v1/especies/:id`, `PUT /api/v1/especies/:id`, `DELETE /api/v1/especies/:id`
+- `POST /api/v1/razas`, `GET /api/v1/razas`, `GET /api/v1/razas/:id`, `PUT /api/v1/razas/:id`, `DELETE /api/v1/razas/:id`
 
 **Validaciones comunes:**
 - nombre requerido y no vacío
@@ -146,9 +146,9 @@ npm install --save-dev nodemon
 | 4.9 | Registrar rutas de auth en `app.js`                        | `app.js`                                      | 5 min      |
 
 **Endpoints:**
-- `POST /api/auth/register` — público, crea usuario (rol `user` por defecto)
-- `POST /api/auth/login` — público, devuelve JWT
-- `GET /api/auth/profile` — requiere auth, devuelve perfil
+- `POST /api/v1/auth/register` — público, crea usuario (rol `user` por defecto)
+- `POST /api/v1/auth/login` — público, devuelve JWT
+- `GET /api/v1/auth/profile` — requiere auth, devuelve perfil
 
 **Middleware de auth (flujo):**
 1. Extraer token de `Authorization: Bearer <token>`
@@ -177,11 +177,11 @@ npm install --save-dev nodemon
 | 5.4 | Registrar rutas de animales en `app.js`                      | `app.js`                                      | 5 min      |
 
 **Endpoints base:**
-- `POST /api/animales` — crear animal (asigna `propietario` = usuario autenticado)
-- `GET /api/animales` — listar (con filtros: especie, raza, sexo, propietario, activo)
-- `GET /api/animales/:id` — detalle (populate de especie, raza, padre, madre, propietario)
-- `PUT /api/animales/:id` — actualizar (solo admin o propietario)
-- `DELETE /api/animales/:id` — soft delete (solo admin o propietario)
+- `POST /api/v1/animales` — crear animal (asigna `propietario` = usuario autenticado)
+- `GET /api/v1/animales` — listar (con filtros: especie, raza, sexo, propietario, activo)
+- `GET /api/v1/animales/:id` — detalle (populate de especie, raza, padre, madre, propietario)
+- `PUT /api/v1/animales/:id` — actualizar (solo admin o propietario)
+- `DELETE /api/v1/animales/:id` — soft delete (solo admin o propietario)
 
 **Validaciones específicas de Animal:**
 - `especie` y `raza` deben ser ObjectId válidos
@@ -206,10 +206,10 @@ npm install --save-dev nodemon
 
 | #   | Tarea                                                        | Archivos involucrados                         | Estimación |
 |-----|--------------------------------------------------------------|-----------------------------------------------|------------|
-| 6.1 | Implementar `GET /api/animales/:id/arbol-genealogico`        | `services/animalService.js` + controller       | 25 min     |
-| 6.2 | Implementar `GET /api/animales/:id/hijos`                    | `services/animalService.js` + controller       | 10 min     |
-| 6.3 | Implementar `GET /api/animales/:id/hermanos`                 | `services/animalService.js` + controller       | 10 min     |
-| 6.4 | Implementar `PATCH /api/animales/:id/padres` (asignar padres)| `services/animalService.js` + controller       | 15 min     |
+| 6.1 | Implementar `GET /api/v1/animales/:id/arbol-genealogico`        | `services/animalService.js` + controller       | 25 min     |
+| 6.2 | Implementar `GET /api/v1/animales/:id/hijos`                    | `services/animalService.js` + controller       | 10 min     |
+| 6.3 | Implementar `GET /api/v1/animales/:id/hermanos`                 | `services/animalService.js` + controller       | 10 min     |
+| 6.4 | Implementar `PATCH /api/v1/animales/:id/padres` (asignar padres)| `services/animalService.js` + controller       | 15 min     |
 | 6.5 | Agregar rutas a `routes/animalesRoutes.js`                  | `routes/animalesRoutes.js`                     | 5 min      |
 
 **Detalle del árbol genealógico:**
@@ -245,8 +245,8 @@ async function construirArbol(animalId, profundidad = 3, actual = 0) {
 
 | #   | Tarea                                                   | Archivos involucrados        | Estimación |
 |-----|---------------------------------------------------------|------------------------------|------------|
-| 7.1 | Implementar `GET /api/usuarios` (listar usuarios)       | service + controller + route | 10 min     |
-| 7.2 | Implementar `PATCH /api/usuarios/:id` (body: `{ active: false }`, soft delete) | service + controller + route | 10 min     |
+| 7.1 | Implementar `GET /api/v1/usuarios` (listar usuarios)       | service + controller + route | 10 min     |
+| 7.2 | Implementar `PATCH /api/v1/usuarios/:id` (body: `{ active: false }`, soft delete) | service + controller + route | 10 min     |
 | 7.3 | Registrar rutas de usuarios en `app.js`                 | `app.js`                     | 5 min      |
 
 ---

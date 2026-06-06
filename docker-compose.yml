@@ -36,6 +36,10 @@ services:
       - JWT_SECRET=${JWT_SECRET}
     env_file:
       - .env
+    command: npx nodemon server.js
+    volumes:
+      - .:/app
+      - /app/node_modules
 
 volumes:
   mongodb_data:
