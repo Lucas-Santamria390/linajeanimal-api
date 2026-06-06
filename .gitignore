@@ -25,7 +25,5 @@ coverage/
 # TypeScript
 *.tsbuildinfo
 
-# OpenCode internal
-.opencode/node_modules/
-.opencode/package.json
-.opencode/package-lock.json
+# OpenCode config (agentes, skills, MCP, node_modules)
+.opencode/

@@ -58,9 +58,10 @@ npm run dev     # nodemon (alternativa local)
 node server.js  # production start
 ```
 
-## OpenCode config
+## OpenCode config (local only — not in git)
 
-- No root `opencode.json` — `.opencode/` is the config root
-- Agents: `.opencode/agents/` (`@documentador`, `@reviewer`, `@security-auditor`, `@supervisor`, `@qa-verifier`)
-- Skills: `.opencode/skills/` (`rest-api-standards`, `security-checklist`) — auto-load when task matches
-- Full assignment rubric (100 pts): `parcial_api_rest_express_tema_libre.pdf`
+- `.opencode/` is the config root (excluded from git via `.gitignore`)
+- Agents (use with `@name`): `@documentador`, `@reviewer`, `@security-auditor`, `@supervisor`, `@qa-verifier`
+- Skills (auto-load on task match): `rest-api-standards`, `security-checklist`
+- GitHub MCP configured in `.opencode/opencode.json`
+- Full assignment rubric: `parcial_api_rest_express_tema_libre.pdf`
