@@ -1,50 +1,50 @@
 const razaService = require('../services/razaService');
 
-const listar = async (req, res, next) => {
+const list = async (req, res, next) => {
   try {
-    const filtros = {};
-    if (req.query.especie) filtros.especie = req.query.especie;
-    const razas = await razaService.listar(filtros);
+    const filters = {};
+    if (req.query.especie) filters.especie = req.query.especie;
+    const razas = await razaService.list(filters);
     res.json({ success: true, data: razas });
   } catch (err) {
     next(err);
   }
 };
 
-const crear = async (req, res, next) => {
+const create = async (req, res, next) => {
   try {
-    const raza = await razaService.crear(req.body);
+    const raza = await razaService.create(req.body);
     res.status(201).json({ success: true, data: raza });
   } catch (err) {
     next(err);
   }
 };
 
-const obtenerPorId = async (req, res, next) => {
+const getById = async (req, res, next) => {
   try {
-    const raza = await razaService.obtenerPorId(req.params.id);
+    const raza = await razaService.getById(req.params.id);
     res.json({ success: true, data: raza });
   } catch (err) {
     next(err);
   }
 };
 
-const actualizar = async (req, res, next) => {
+const update = async (req, res, next) => {
   try {
-    const raza = await razaService.actualizar(req.params.id, req.body);
+    const raza = await razaService.update(req.params.id, req.body);
     res.json({ success: true, data: raza });
   } catch (err) {
     next(err);
   }
 };
 
-const eliminar = async (req, res, next) => {
+const remove = async (req, res, next) => {
   try {
-    const raza = await razaService.eliminar(req.params.id);
+    const raza = await razaService.remove(req.params.id);
     res.json({ success: true, data: raza });
   } catch (err) {
     next(err);
   }
 };
 
-module.exports = { listar, crear, obtenerPorId, actualizar, eliminar };
+module.exports = { list, create, getById, update, remove };

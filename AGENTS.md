@@ -13,7 +13,7 @@
 ```
 /
 ├── config/          # DB connection, env validation, Swagger
-├── middleware/       # auth, role, errorHandler, rateLimiter, validateId
+├── middleware/       # auth, role, errorHandler, rateLimiter
 ├── models/          # Mongoose schemas (Usuario, Especie, Raza, Animal)
 ├── routes/          # Express routers + express-validator inline
 ├── controllers/     # thin try/catch → next(err), delegate to services/
@@ -28,12 +28,13 @@
 
 - **Password security**: `select: false` on `password`, `toJSON()` strips it, `pre('save')` bcrypt hash (salt=10)
 - **Soft deletes**: `findByIdAndUpdate` with `{ active: false }` — never `deleteOne`/`deleteMany`
-- **validateId**: always use `middleware/validateId.js` before querying by `:id`
+- **ObjectId validation**: routes use `param('id').isMongoId()` via express-validator inline — no separate middleware file
 - **Controller pattern**: every method `try/catch { next(err) }`, always delegates to services, never touches models
 - **Service pattern**: services do existence + active checks, throw errors with `err.statusCode` set
+- **Service naming**: all service/controller functions named in **English** (`list`, `create`, `getById`, `update`, `remove`)
 - **Error handler**: `ValidationError`→400, `CastError`→400, duplicate key 11000→409, no stack in production
 - **Auth limiter**: 10 req / 15 min on register + login only (profile is not rate-limited)
-- **Response format**: `{ success: true, data: ... }` on success, `{ success: false, message: "..." }` on error
+- **Response format**: `{ success: true, data: ... }` on success, `{ success: false, message: "..." }` on error (always `message`, never `errors`)
 - **Validación inline**: `validarCampos` helper (checking `validationResult`) is defined inline in every route file, not as shared middleware — replicate when adding new route files
 - **JWT payload**: `{ id, rol }` (not `role`), expires in 7 days
 - **Role middleware**: `authorize('admin')` checks `req.usuario.rol` — returns 401 if no token, 403 if wrong role
@@ -82,7 +83,7 @@ Configured in `config/swagger.js` using `swagger-jsdoc`. Reads annotations from 
 
 ## Env vars
 
-`PORT`, `MONGODB_URI`, `JWT_SECRET`, `NODE_ENV`, `CORS_ORIGIN` — validated at startup in `config/env.js`.
+`PORT`, `MONGODB_URI`, `JWT_SECRET`, `NODE_ENV`, `CORS_ORIGIN`, `API_URL` — validated at startup in `config/env.js`.
 
 ## OpenCode
 
