@@ -69,7 +69,7 @@ que necesite mantener un registro estructurado de animales con trazabilidad gene
 
 | ID     | Descripción                                                                 | Prioridad |
 |--------|-----------------------------------------------------------------------------|-----------|
-| RF-27  | Rate limiting en rutas de autenticación (máx. 20 intentos por cada 15 minutos) | Alta      |
+| RF-27  | Rate limiting en rutas de autenticación (máx. 10 intentos por cada 15 minutos) | Alta      |
 | RF-28  | Protección de headers con Helmet                                            | Alta      |
 | RF-29  | CORS configurado (permitir orígenes específicos)                            | Alta      |
 | RF-30  | Contraseñas hasheadas con bcrypt (salt ≥ 10)                                | Alta      |
@@ -80,8 +80,8 @@ que necesite mantener un registro estructurado de animales con trazabilidad gene
 | ID     | Descripción                                                                 | Prioridad |
 |--------|-----------------------------------------------------------------------------|-----------|
 | RF-32  | Endpoint de health check (`GET /api/v1/health`)                              | Alta      |
-| RF-33  | Seed data para desarrollo (usuarios, especies, razas, animales)             | Alta      |
-| RF-34  | Documentación de la API (Postman collection o Swagger)                      | Alta      |
+| RF-33  | Seed data para desarrollo (usuarios, especies, razas, animales)             | Media (pendiente) |
+| RF-34  | Documentación de la API con Swagger (ruta `/api/v1/docs`)                    | Alta      |
 | RF-35  | Sanitizar entrada para prevenir inyección NoSQL usando express-validator o mongo-sanitize | Alta      |
 
 ---

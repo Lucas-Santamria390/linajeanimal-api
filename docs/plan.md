@@ -164,7 +164,7 @@ npm install --save-dev nodemon
 
 ---
 
-## Fase 5: CRUD de Animales con relaciones
+## Fase 5: CRUD de Animales con relaciones (pendiente)
 
 > Dependencias: Fases 3 y 4  
 > Objetivo: Implementar CRUD completo de Animales con validaciones de parentesco.
@@ -186,7 +186,7 @@ npm install --save-dev nodemon
 **Validaciones específicas de Animal:**
 - `especie` y `raza` deben ser ObjectId válidos
 - `sexo` debe ser `macho` o `hembra`
-- `fechaNacimiento` debe ser una fecha válida, no futura
+- `fechaNacimiento` debe ser una fecha válida, no futura (⚠️ pendiente de implementar en modelo o service)
 - `padre` si se proporciona: debe existir, ser activo, de sexo `macho`, misma especie
 - `madre` si se proporciona: debe existir, ser activa, de sexo `hembra`, misma especie
 - `identificador` único (índice sparse, permite múltiples nulls)
@@ -199,7 +199,7 @@ npm install --save-dev nodemon
 
 ---
 
-## Fase 6: Rutas de dominio genealógico
+## Fase 6: Rutas de dominio genealógico (pendiente)
 
 > Dependencias: Fase 5  
 > Objetivo: Implementar endpoints específicos de genealogía (árbol, hijos, hermanos, padres).
@@ -238,7 +238,7 @@ async function construirArbol(animalId, profundidad = 3, actual = 0) {
 
 ---
 
-## Fase 7: Administración de usuarios (solo admin)
+## Fase 7: Administración de usuarios (solo admin) (pendiente)
 
 > Dependencias: Fase 4  
 > Objetivo: Endpoints para que admin gestione usuarios.
@@ -251,7 +251,7 @@ async function construirArbol(animalId, profundidad = 3, actual = 0) {
 
 ---
 
-## Fase 8: Seed data y documentación
+## Fase 8: Seed data y documentación (parcial)
 
 > Dependencias: Fase 6 (todas las entidades creadas)  
 > Objetivo: Poblar la BD con datos de ejemplo y generar documentación de la API.
@@ -337,91 +337,94 @@ incluye el servicio `mongodb`, por lo que no se necesita MongoDB instalado en el
 
 ```
 /
-├── package.json                  # Fase 0
-├── .env.example                  # Fase 0
-├── .gitignore                    # Fase 0
-├── server.js                     # Fase 1 (solo listen())
-├── app.js                        # Fase 1 (config Express)
-├── seed.js                       # Fase 8 (datos de prueba)
-├── postman_collection.json       # Fase 8
-├── README.md                     # Fase 8
+├── package.json                  # Fase 0 ✅
+├── .env.example                  # Fase 0 ✅
+├── .gitignore                    # Fase 0 ✅
+├── server.js                     # Fase 1 (solo listen()) ✅
+├── app.js                        # Fase 1 (config Express) ✅
+├── seed.js                       # Fase 8 ❌ pendiente
+├── postman_collection.json       # Fase 8 ❌ pendiente
+├── README.md                     # Fase 8 ✅
 │
 ├── config/
-│   ├── db.js                     # Fase 1
-│   └── env.js                    # Fase 1
+│   ├── db.js                     # Fase 1 ✅
+│   ├── env.js                    # Fase 1 ✅
+│   └── swagger.js                # Fase 8 ✅
 │
 ├── middleware/
-│   ├── auth.js                   # Fase 4
-│   ├── role.js                   # Fase 4
-│   ├── validateId.js             # Fase 4
-│   ├── rateLimiter.js            # Fase 4
-│   └── errorHandler.js           # Fase 4
+│   ├── auth.js                   # Fase 4 ✅
+│   ├── role.js                   # Fase 4 ✅
+│   ├── validateId.js             # Fase 4 ✅
+│   ├── rateLimiter.js            # Fase 4 ✅
+│   └── errorHandler.js           # Fase 4 ✅
 │
 ├── models/
-│   ├── Usuario.js                # Fase 2
-│   ├── Especie.js                # Fase 2
-│   ├── Raza.js                   # Fase 2
-│   └── Animal.js                 # Fase 2
+│   ├── Usuario.js                # Fase 2 ✅
+│   ├── Especie.js                # Fase 2 ✅
+│   ├── Raza.js                   # Fase 2 ✅
+│   └── Animal.js                 # Fase 2 ✅
 │
 ├── services/
-│   ├── authService.js            # Fase 4
-│   ├── especieService.js         # Fase 3
-│   ├── razaService.js            # Fase 3
-│   ├── animalService.js          # Fase 5 y 6
-│   └── usuarioService.js         # Fase 7
+│   ├── authService.js            # Fase 4 ✅
+│   ├── especieService.js         # Fase 3 ✅
+│   ├── razaService.js            # Fase 3 ✅
+│   ├── animalService.js          # Fase 5 y 6 ❌ pendiente
+│   └── usuarioService.js         # Fase 7 ❌ pendiente
 │
 ├── controllers/
-│   ├── authController.js         # Fase 4
-│   ├── especieController.js      # Fase 3
-│   ├── razaController.js         # Fase 3
-│   ├── animalController.js       # Fase 5 y 6
-│   └── usuarioController.js      # Fase 7
+│   ├── authController.js         # Fase 4 ✅
+│   ├── especieController.js      # Fase 3 ✅
+│   ├── razaController.js         # Fase 3 ✅
+│   ├── animalController.js       # Fase 5 y 6 ❌ pendiente
+│   └── usuarioController.js      # Fase 7 ❌ pendiente
 │
 ├── routes/
-│   ├── authRoutes.js             # Fase 4
-│   ├── especiesRoutes.js         # Fase 3
-│   ├── razasRoutes.js            # Fase 3
-│   ├── animalesRoutes.js         # Fase 5 y 6
-│   ├── usuariosRoutes.js         # Fase 7
-│   └── healthRoutes.js           # Fase 1
+│   ├── authRoutes.js             # Fase 4 ✅
+│   ├── especiesRoutes.js         # Fase 3 ✅
+│   ├── razasRoutes.js            # Fase 3 ✅
+│   ├── animalesRoutes.js         # Fase 5 y 6 ❌ pendiente
+│   ├── usuariosRoutes.js         # Fase 7 ❌ pendiente
+│   └── healthRoutes.js           # Fase 1 (inline en app.js) ✅
 │
-├── Dockerfile                    # Fase 0
-├── .dockerignore                 # Fase 0
-├── docker-compose.yml            # Fase 0
+├── Dockerfile                    # Fase 0 ✅
+├── .dockerignore                 # Fase 0 ✅
+├── docker-compose.yml            # Fase 0 ✅
 │
 └── docs/
-    ├── requisitos.md             # Documentación
-    ├── casos-de-uso.md           # Documentación
-    ├── modelo-de-datos.md        # Documentación
-    └── plan.md                   # Documentación
+    ├── requisitos.md             # Documentación ✅
+    ├── casos-de-uso.md           # Documentación ✅
+    ├── modelo-de-datos.md        # Documentación ✅
+    ├── plan.md                   # Documentación ✅
+    └── swagger/
+        └── auth.yml              # Documentación ✅
 ```
 
 ---
 
 ## 4. Checklist de verificación (alineado con rúbrica)
 
-| #   | Requisito                                        | Fase | Verificado |
-|-----|--------------------------------------------------|------|------------|
-| 1   | Estructura de carpetas según rúbrica              | 0    | ☐          |
-| 2   | server.js y app.js separados                      | 1    | ☐          |
-| 3   | Capa services/ separada                           | 3-7  | ☐          |
-| 4   | Auth routes: register, login, profile             | 4    | ☐          |
-| 5   | JWT + bcrypt (salt ≥ 10)                          | 4    | ☐          |
-| 6   | Role middleware (401, 403)                        | 4    | ☐          |
-| 7   | Soft deletes (active: Boolean)                    | 3-7  | ☐          |
-| 8   | Centralized error handler                         | 4    | ☐          |
-| 9   | Validaciones (email, password, enums, ObjectId)   | 3-5  | ☐          |
-| 10  | Rate limiting en auth routes                      | 4    | ☐          |
-| 11  | Helmet, CORS                                      | 1    | ☐          |
-| 12  | Sin password en respuestas                        | 2    | ☐          |
-| 13  | Seed data                                         | 8    | ☐          |
-| 14  | Postman collection o Swagger                      | 8    | ☐          |
-| 15  | .env.example presente                             | 0    | ☐          |
-| 16  | Health check endpoint                             | 1    | ☐          |
-| 17  | README completo                                   | 8    | ☐          |
-| 18  | Docker Compose (api + mongodb)                     | 0    | ☐          |
-| 19  | Dockerfile multi-stage                              | 0    | ☐          |
-| 20  | Healthcheck MongoDB en docker-compose               | 0    | ☐          |
+| #   | Requisito                                        | Fase | Estado |
+|-----|--------------------------------------------------|------|--------|
+| 1   | Estructura de carpetas según rúbrica              | 0    | ✅ |
+| 2   | server.js y app.js separados                      | 1    | ✅ |
+| 3   | Capa services/ separada                           | 3-7  | ✅ |
+| 4   | Auth routes: register, login, profile             | 4    | ✅ |
+| 5   | JWT + bcrypt (salt ≥ 10)                          | 4    | ✅ |
+| 6   | Role middleware (401, 403)                        | 4    | ✅ |
+| 7   | Soft deletes (active: Boolean)                    | 3-7  | ✅ |
+| 8   | Centralized error handler                         | 4    | ✅ |
+| 9   | Validaciones (email, password, enums, ObjectId)   | 3-5  | ✅ |
+| 10  | Rate limiting en auth routes                      | 4    | ✅ |
+| 11  | Helmet, CORS                                      | 1    | ✅ |
+| 12  | Sin password en respuestas                        | 2    | ✅ |
+| 13  | Seed data                                         | 8    | ❌ |
+| 14  | Postman collection o Swagger                      | 8    | ⚠️ (solo Swagger) |
+| 15  | .env.example presente                             | 0    | ✅ |
+| 16  | Health check endpoint                             | 1    | ✅ |
+| 17  | README completo                                   | 8    | ✅ |
+| 18  | Docker Compose (api + mongodb)                     | 0    | ✅ |
+| 19  | Dockerfile multi-stage                              | 0    | ✅ |
+| 20  | Healthcheck MongoDB en docker-compose               | 0    | ✅ |
 
 ---
 
