@@ -1,4 +1,5 @@
 const swaggerJsdoc = require('swagger-jsdoc');
+const config = require('./env');
 
 const options = {
   definition: {
@@ -9,7 +10,7 @@ const options = {
       description: 'API REST para gestionar árbol genealógico de animales',
     },
     servers: [
-      { url: 'http://localhost:3000', description: 'Development server' },
+      { url: process.env.API_URL || `http://localhost:${config.port}`, description: 'API server' },
     ],
     components: {
       securitySchemes: {
