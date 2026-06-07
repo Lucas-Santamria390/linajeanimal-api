@@ -9,9 +9,9 @@ paths:
           application/json:
             schema:
               type: object
-              required: [name, email, password]
+              required: [nombre, email, password]
               properties:
-                name:
+                nombre:
                   type: string
                 email:
                   type: string
