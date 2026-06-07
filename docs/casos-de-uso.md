@@ -138,8 +138,6 @@
 | **Flujo normal**| 1. El usuario envía `GET /api/v1/auth/profile` con token en header `Authorization: Bearer <token>`.<br>2. El sistema decodifica el token, busca al usuario y devuelve sus datos.<br>3. Responde `200 OK`. |
 | **Flujo alterno**| 1a. Token inválido/expirado → `401 Unauthorized`.              |
 
-> ⚠️ **CU pendiente de implementar** — no existe ruta, controlador ni servicio.
-
 ---
 
 ## CU-07: Actualizar datos de un animal

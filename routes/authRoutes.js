@@ -20,7 +20,6 @@ router.post('/register',
   body('nombre').trim().notEmpty().withMessage('El nombre es obligatorio').escape(),
   body('email').isEmail().withMessage('Email no válido').normalizeEmail(),
   body('password').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres'),
-  body('rol').optional().isIn(['user', 'admin']).withMessage('Rol no válido'),
   validarCampos,
   controller.register
 );

@@ -28,6 +28,12 @@ const getById = async (id) => {
 };
 
 const update = async (id, data) => {
+  const raza = await Raza.findById(id);
+  if (!raza || !raza.active) {
+    const err = new Error('Raza no encontrada');
+    err.statusCode = 404;
+    throw err;
+  }
   if (data.especie) {
     const especie = await Especie.findById(data.especie);
     if (!especie || !especie.active) {
@@ -36,13 +42,7 @@ const update = async (id, data) => {
       throw err;
     }
   }
-  const raza = await Raza.findByIdAndUpdate(id, data, { new: true, runValidators: true }).populate('especie', 'nombre');
-  if (!raza || !raza.active) {
-    const err = new Error('Raza no encontrada');
-    err.statusCode = 404;
-    throw err;
-  }
-  return raza;
+  return Raza.findByIdAndUpdate(id, data, { new: true, runValidators: true }).populate('especie', 'nombre');
 };
 
 const remove = async (id) => {

@@ -140,8 +140,7 @@ npm install --save-dev nodemon
 | 4.3 | Crear `routes/authRoutes` y validaciones                   | `routes/authRoutes.js`                        | 10 min     |
 | 4.4 | Crear middleware `auth.js` (verificar token JWT)           | `middleware/auth.js`                           | 15 min     |
 | 4.5 | Crear middleware `role.js` (verificar rol)                 | `middleware/role.js`                           | 10 min     |
-| 4.6 | Crear middleware `validateId.js` (validar ObjectId)        | `middleware/validateId.js`                    | 5 min      |
-| 4.7 | Crear middleware `errorHandler.js` (centralizado)          | `middleware/errorHandler.js`                   | 10 min     |
+| 4.6 | Crear middleware `errorHandler.js` (centralizado)          | `middleware/errorHandler.js`                   | 10 min     |
 | 4.8 | Rate limiter para rutas de auth                            | `middleware/rateLimiter.js` o en `app.js`      | 5 min      |
 | 4.9 | Registrar rutas de auth en `app.js`                        | `app.js`                                      | 5 min      |
 
@@ -354,7 +353,6 @@ incluye el servicio `mongodb`, por lo que no se necesita MongoDB instalado en el
 ├── middleware/
 │   ├── auth.js                   # Fase 4 ✅
 │   ├── role.js                   # Fase 4 ✅
-│   ├── validateId.js             # Fase 4 ✅
 │   ├── rateLimiter.js            # Fase 4 ✅
 │   └── errorHandler.js           # Fase 4 ✅
 │

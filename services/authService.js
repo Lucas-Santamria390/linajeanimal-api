@@ -7,6 +7,7 @@ const generateToken = (id, rol) => {
 };
 
 const register = async (data) => {
+  data.rol = 'user';
   const usuario = await Usuario.create(data);
   const token = generateToken(usuario._id, usuario.rol);
   return { usuario, token };

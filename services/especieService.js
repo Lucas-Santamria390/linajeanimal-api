@@ -19,13 +19,13 @@ const getById = async (id) => {
 };
 
 const update = async (id, data) => {
-  const especie = await Especie.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+  const especie = await Especie.findById(id);
   if (!especie || !especie.active) {
     const err = new Error('Especie no encontrada');
     err.statusCode = 404;
     throw err;
   }
-  return especie;
+  return Especie.findByIdAndUpdate(id, data, { new: true, runValidators: true });
 };
 
 const remove = async (id) => {
