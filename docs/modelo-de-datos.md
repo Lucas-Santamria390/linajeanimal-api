@@ -273,7 +273,7 @@ genealógica y de identificación.
 | Un usuario `user` solo puede modificar animales donde sea `propietario`| Verificación en service                             |
 | El email debe tener formato válido                                     | express-validator + regex                           |
 | Password mínimo 6 caracteres                                           | express-validator                                   |
-| ObjectId debe ser válido antes de consultar la BD                      | Validación custom middleware                        |
+| ObjectId debe ser válido antes de consultar la BD                      | express-validator inline con `param('id').isMongoId()` en cada ruta |
 
 ---
 
