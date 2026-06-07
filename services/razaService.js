@@ -1,13 +1,13 @@
 const Raza = require('../models/Raza');
 const Especie = require('../models/Especie');
 
-const listar = async (filtros = {}) => {
+const list = async (filters = {}) => {
   const query = { active: true };
-  if (filtros.especie) query.especie = filtros.especie;
+  if (filters.especie) query.especie = filters.especie;
   return Raza.find(query).populate('especie', 'nombre').sort({ nombre: 1 });
 };
 
-const crear = async (data) => {
+const create = async (data) => {
   const especie = await Especie.findById(data.especie);
   if (!especie || !especie.active) {
     const err = new Error('Especie no encontrada');
@@ -17,7 +17,7 @@ const crear = async (data) => {
   return Raza.create(data);
 };
 
-const obtenerPorId = async (id) => {
+const getById = async (id) => {
   const raza = await Raza.findById(id).populate('especie', 'nombre');
   if (!raza || !raza.active) {
     const err = new Error('Raza no encontrada');
@@ -27,7 +27,13 @@ const obtenerPorId = async (id) => {
   return raza;
 };
 
-const actualizar = async (id, data) => {
+const update = async (id, data) => {
+  const raza = await Raza.findById(id);
+  if (!raza || !raza.active) {
+    const err = new Error('Raza no encontrada');
+    err.statusCode = 404;
+    throw err;
+  }
   if (data.especie) {
     const especie = await Especie.findById(data.especie);
     if (!especie || !especie.active) {
@@ -36,16 +42,10 @@ const actualizar = async (id, data) => {
       throw err;
     }
   }
-  const raza = await Raza.findByIdAndUpdate(id, data, { new: true, runValidators: true }).populate('especie', 'nombre');
-  if (!raza || !raza.active) {
-    const err = new Error('Raza no encontrada');
-    err.statusCode = 404;
-    throw err;
-  }
-  return raza;
+  return Raza.findByIdAndUpdate(id, data, { new: true, runValidators: true }).populate('especie', 'nombre');
 };
 
-const eliminar = async (id) => {
+const remove = async (id) => {
   const raza = await Raza.findByIdAndUpdate(id, { active: false }, { new: true });
   if (!raza) {
     const err = new Error('Raza no encontrada');
@@ -55,4 +55,4 @@ const eliminar = async (id) => {
   return raza;
 };
 
-module.exports = { listar, crear, obtenerPorId, actualizar, eliminar };
+module.exports = { list, create, getById, update, remove };

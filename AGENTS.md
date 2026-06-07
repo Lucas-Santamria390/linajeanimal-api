@@ -1,67 +1,92 @@
 # DS-Parcial2 — LinajeAnimal (Express REST API)
 
-**Project state: scaffold only** — no source code exists. Generate everything from scratch.
+**Domain**: animal genealogy tree API. Entities: Animal (parent/child), Especie, Raza. Two roles: admin, user.
 
-**Domain**: LinajeAnimal = animal genealogy tree API. Entities: Animal (with parent/child relationships), Especie, Raza. Two roles: admin, user.
+## Branches
 
-## Project structure (enforced by rubric)
+- `main` — stable
+- `develop` — active development
+- CI (`.github/workflows/ci.yml`) triggers on push/PR to both.
+
+## Project structure
 
 ```
 /
-├── config/          # DB connection, env config
-├── middleware/       # auth, role, error handler, validation
-├── models/          # Mongoose schemas
-├── routes/          # Express routers
-├── controllers/     # thin — delegate to services/
-├── services/        # business logic
-├── server.js        # listen() only
-├── app.js           # Express app setup
+├── config/          # DB connection, env validation, Swagger
+├── middleware/       # auth, role, errorHandler, rateLimiter
+├── models/          # Mongoose schemas (Usuario, Especie, Raza, Animal)
+├── routes/          # Express routers + express-validator inline
+├── controllers/     # thin try/catch → next(err), delegate to services/
+├── services/        # business logic, existence + active checks
+├── server.js        # listen() after connectDB
+├── app.js           # Express setup (no listen)
 ├── .env.example
-├── README.md
-└── postman_collection.json (or Swagger)
+└── README.md
 ```
 
-## Non-negotiable requirements
+## Key architecture (easy to miss)
 
-- **Auth routes**: `POST /api/v1/auth/register` (public), `POST /api/v1/auth/login` (public), `GET /api/v1/auth/profile` (auth required)
-- **Health check**: `GET /api/v1/health` or similar
-- **Role middleware**: test 3 cases — authenticated allowed, authenticated denied (wrong role, 403), unauthenticated rejected (401)
-- **Soft deletes**: `active: Boolean` field, no `deleteOne`/`findByIdAndDelete`/`deleteMany` — use `findByIdAndUpdate` with `{ active: false }`
-- **Centralized error handler**: single middleware catching all errors, no stack traces in production
-- **Data validation**: required fields, email format, password ≥ 6 chars, valid enum values, valid ObjectId before DB query, existence check before update/delete, sanitize input to prevent NoSQL injection
-- **Seed data**: initial users and entity records
-- **Response format**: `{ success: true, data: {...} }` / `{ success: false, message: "..." }` consistently
-- **Security**: `.env` in `.gitignore`, `.env.example` provided, bcrypt (salt ≥ 10), no password in responses, CORS, helmet, rate-limiting on auth routes
+- **Password security**: `select: false` on `password`, `toJSON()` strips it, `pre('save')` bcrypt hash (salt=10)
+- **Soft deletes**: `findByIdAndUpdate` with `{ active: false }` — never `deleteOne`/`deleteMany`
+- **ObjectId validation**: routes use `param('id').isMongoId()` via express-validator inline — no separate middleware file
+- **Controller pattern**: every method `try/catch { next(err) }`, always delegates to services, never touches models
+- **Service pattern**: services do existence + active checks, throw errors with `err.statusCode` set
+- **Service naming**: all service/controller functions named in **English** (`list`, `create`, `getById`, `update`, `remove`)
+- **Error handler**: `ValidationError`→400, `CastError`→400, duplicate key 11000→409, no stack in production
+- **Auth limiter**: 10 req / 15 min on register + login only (profile is not rate-limited)
+- **Response format**: `{ success: true, data: ... }` on success, `{ success: false, message: "..." }` on error (always `message`, never `errors`)
+- **Validación inline**: `validarCampos` helper (checking `validationResult`) is defined inline in every route file, not as shared middleware — replicate when adding new route files
+- **JWT payload**: `{ id, rol }` (not `role`), expires in 7 days
+- **Role middleware**: `authorize('admin')` checks `req.usuario.rol` — returns 401 if no token, 403 if wrong role
+- **Animal model gap**: `fechaNacimiento` has no "no future dates" validator (required in plan, not implemented in model yet)
 
-## Critical deductions
+## Implemented vs planned
 
-- `services/` layer missing or controllers fat → deducted
-- `server.js` and `app.js` not separate → deducted
-- Password hash in responses → deducted
-- Physical deletes → deducted
-- No rate limiting on auth routes → deducted
-- No `.env.example` → deducted
+| Status | Area |
+|---|---|
+| ✅ | Auth (register, login, profile), Especies CRUD, Razas CRUD, Health, Swagger, CI |
+| ⬜ | Animal endpoints (routes/controller/service not wired — model exists) |
+| ⬜ | Usuario management endpoints (list, soft-delete users — planned in docs, no code yet) |
+| ⬜ | Tests (none) |
+| ⬜ | Seed script (referenced in `docs/plan.md`, does not exist) |
 
-## Required dependencies
+## Routes
 
-express, mongoose, jsonwebtoken, bcryptjs, helmet, cors, express-rate-limit, express-validator, dotenv, morgan, nodemon (dev)
-
-## Environment variables
-
-`PORT`, `MONGODB_URI`, `JWT_SECRET`, `NODE_ENV` — validate at startup.
+All under `/api/v1/`.
 
 ## Commands
 
-```bash
-npm run docker  # docker compose up --build (recomendado)
-npm run dev     # nodemon (alternativa local)
-node server.js  # production start
-```
+| Command | Description |
+|---------|-------------|
+| `npm run docker` | `docker compose up --build` |
+| `npm run dev` | `nodemon server.js` |
+| `npm start` | `node server.js` |
 
-## OpenCode config (local only — not in git)
+No lint, typecheck, or test scripts exist. CI only checks syntax (`node --check`) and that `app.js` loads without crashing: `node -e "require('./app.js')"`.
 
-- `.opencode/` is the config root (excluded from git via `.gitignore`)
-- Agents (use with `@name`): `@documentador`, `@reviewer`, `@security-auditor`, `@supervisor`, `@qa-verifier`
-- Skills (auto-load on task match): `rest-api-standards`, `security-checklist`
-- GitHub MCP configured in `.opencode/opencode.json`
-- Full assignment rubric: `parcial_api_rest_express_tema_libre.pdf`
+## CI (`.github/workflows/ci.yml`)
+
+1. `npm ci`
+2. `node --check app.js && node --check server.js`
+3. `timeout 10 node -e "require('./app.js'); console.log('OK')"` with `NODE_ENV=test`, `MONGODB_URI`, `JWT_SECRET=test-secret`
+4. MongoDB 7 service container available at `localhost:27017`
+
+## Docker details
+
+- **API container**: runs `npx nodemon server.js` with bind mount + `/app/node_modules` anonymous volume for hot reload in dev
+- **MongoDB**: image `mongo:7`, healthcheck with `mongosh`, persistent volume `mongodb_data`
+- **MONGODB_URI** inside Docker: overridden to `mongodb://root:rootpass@mongodb:27017/linajeanimal?authSource=admin`
+
+## Swagger
+
+Configured in `config/swagger.js` using `swagger-jsdoc`. Reads annotations from `./routes/*.js` and `./docs/swagger/*.yml`. Available at `GET /api/v1/docs`.
+
+## Env vars
+
+`PORT`, `MONGODB_URI`, `JWT_SECRET`, `NODE_ENV`, `CORS_ORIGIN`, `API_URL` — validated at startup in `config/env.js`.
+
+## OpenCode
+
+- Agents: `@documentador`, `@reviewer`, `@security-auditor`, `@supervisor`, `@qa-verifier`, `@issuer`
+- Skills: `rest-api-standards`, `security-checklist`
+- Rubric: `parcial_api_rest_express_tema_libre.pdf`

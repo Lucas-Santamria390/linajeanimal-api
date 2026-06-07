@@ -9,7 +9,8 @@ const router = Router();
 const validarCampos = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ success: false, errors: errors.array() });
+    const messages = errors.array().map(e => e.msg).join('; ');
+    return res.status(400).json({ success: false, message: messages });
   }
   next();
 };
@@ -17,13 +18,13 @@ const validarCampos = (req, res, next) => {
 router.get('/',
   query('especie').optional().isMongoId().withMessage('ID de especie inválido'),
   validarCampos,
-  controller.listar
+  controller.list
 );
 
 router.get('/:id',
   param('id').isMongoId().withMessage('ID inválido'),
   validarCampos,
-  controller.obtenerPorId
+  controller.getById
 );
 
 router.post('/',
@@ -34,7 +35,7 @@ router.post('/',
   body('descripcion').optional().trim().escape(),
   body('especie').isMongoId().withMessage('ID de especie inválido'),
   validarCampos,
-  controller.crear
+  controller.create
 );
 
 router.put('/:id',
@@ -46,7 +47,7 @@ router.put('/:id',
   body('descripcion').optional().trim().escape(),
   body('especie').optional().isMongoId().withMessage('ID de especie inválido'),
   validarCampos,
-  controller.actualizar
+  controller.update
 );
 
 router.delete('/:id',
@@ -54,7 +55,7 @@ router.delete('/:id',
   authorize('admin'),
   param('id').isMongoId().withMessage('ID inválido'),
   validarCampos,
-  controller.eliminar
+  controller.remove
 );
 
 module.exports = router;

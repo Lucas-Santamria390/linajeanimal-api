@@ -14,6 +14,8 @@
 - **Rol admin:** acceso completo a todas las operaciones
 - **Rol user:** acceso limitado a sus propios recursos
 
+> ⚠️ **Nota de implementación:** Los casos de uso CU-01 a CU-04, CU-07, CU-08 y CU-10 (referentes a Animales) y CU-11 (gestión de usuarios) describen funcionalidades aún **no implementadas**. Solo están operativos los endpoints de autenticación (CU-05, CU-06), especies y razas (CU-09), y health check. Ver tabla de endpoints al final.
+
 ---
 
 ## CU-01: Registrar un nuevo animal
@@ -27,6 +29,8 @@
 | **Flujo normal**| 1. El usuario envía `POST /api/v1/animales` con nombre, especie, raza, sexo, fecha de nacimiento, peso, color, y opcionalmente padre, madre.<br>2. El sistema valida los datos (especie, raza existen, ObjectId válidos, sexo válido).<br>3. Si se especifican padre/madre, verifica que existan y sean del sexo correcto.<br>4. El sistema crea el animal y lo asocia al usuario autenticado como `propietario`.<br>5. Responde con `201 Created` y los datos del animal creado. |
 | **Flujo alterno**| 2a. Datos inválidos → `400 Bad Request`. <br>3a. Padre/madre no existen → `404 Not Found`. <br>3b. Padre no es macho o madre no es hembra → `400 Bad Request`. |
 
+> ⚠️ **CU pendiente de implementar** — no existe ruta, controlador ni servicio.
+
 ---
 
 ## CU-02: Consultar árbol genealógico de un animal
@@ -39,6 +43,8 @@
 | **Postcondición**| Se devuelve una estructura jerárquica con los ancestros.       |
 | **Flujo normal**| 1. El usuario envía `GET /api/v1/animales/:id/arbol-genealogico?generaciones=3`.<br>2. El sistema verifica que el animal existe.<br>3. El sistema construye recursivamente el árbol (padre → abuelos → bisabuelos).<br>4. Responde con `200 OK` y la estructura del árbol. |
 | **Flujo alterno**| 2a. Animal no existe o está desactivado → `404 Not Found`. |
+
+> ⚠️ **CU pendiente de implementar** — no existe ruta, controlador ni servicio.
 
 **Ejemplo de respuesta:**
 ```json
@@ -76,6 +82,8 @@
 | **Flujo normal**| 1. El usuario envía `GET /api/v1/animales?especie=...&raza=...&sexo=...&page=1&limit=10`.<br>2. El sistema aplica los filtros y devuelve resultados paginados.<br>3. Responde con `200 OK`. |
 | **Flujo alterno**| 2a. Sin filtros → devuelve todos los animales activos.         |
 
+> ⚠️ **CU pendiente de implementar** — no existe ruta, controlador ni servicio.
+
 ---
 
 ## CU-04: Asignar padres a un animal
@@ -88,6 +96,8 @@
 | **Postcondición**| El animal queda vinculado a sus padres.                        |
 | **Flujo normal**| 1. El usuario envía `PATCH /api/v1/animales/:id/padres` con `{ padre: "id1", madre: "id2" }`.<br>2. El sistema valida que los IDs existen y los sexos son correctos.<br>3. Verifica que no se asignen padres que sean descendientes del animal (evitar ciclos).<br>4. Actualiza el animal.<br>5. Responde con `200 OK`. |
 | **Flujo alterno**| 2a. Padre/madre inválido o sexo incorrecto → `400 Bad Request`.<br>3a. Se detecta un ciclo genealógico → `400 Bad Request`. |
+
+> ⚠️ **CU pendiente de implementar** — no existe ruta, controlador ni servicio.
 
 ---
 
@@ -141,6 +151,8 @@
 | **Flujo normal**| 1. El usuario envía `PUT /api/v1/animales/:id` con los campos a actualizar.<br>2. El sistema valida los datos.<br>3. Verifica que el usuario es admin o el `propietario` del animal.<br>4. Actualiza el documento.<br>5. Responde `200 OK`. |
 | **Flujo alterno**| 3a. Usuario no autorizado → `403 Forbidden`.<br>2a. Datos inválidos → `400 Bad Request`. |
 
+> ⚠️ **CU pendiente de implementar** — no existe ruta, controlador ni servicio.
+
 ---
 
 ## CU-08: Eliminación lógica de un animal (soft delete)
@@ -153,6 +165,8 @@
 | **Postcondición**| El animal queda con `active: false`.                           |
 | **Flujo normal**| 1. El usuario envía `DELETE /api/v1/animales/:id`.<br>2. El sistema verifica permisos.<br>3. Usa `findByIdAndUpdate` con `{ active: false }` (NO elimina físicamente).<br>4. Responde `200 OK` con los datos actualizados. |
 | **Flujo alterno**| 2a. Usuario no autorizado → `403 Forbidden`.<br>2b. Animal no existe → `404 Not Found`. |
+
+> ⚠️ **CU pendiente de implementar** — no existe ruta, controlador ni servicio.
 
 ---
 
@@ -180,6 +194,8 @@
 | **Flujo normal**| 1. Usuario envía `GET /api/v1/animales/:id/hijos` o `GET /api/v1/animales/:id/hermanos`.<br>2. El sistema busca animales cuyo `padre` o `madre` sea el ID dado (hijos), o que compartan ambos padres (hermanos).<br>3. Responde `200 OK` con la lista. |
 | **Flujo alterno**| 2a. Animal no existe → `404 Not Found`.                        |
 
+> ⚠️ **CU pendiente de implementar** — no existe ruta, controlador ni servicio.
+
 ---
 
 ## CU-11: Listar y gestionar usuarios (solo admin)
@@ -193,34 +209,36 @@
 | **Flujo normal**| 1. Admin envía `GET /api/v1/usuarios` o `PATCH /api/v1/usuarios/:id` con body `{ active: false }`.<br>2. Verifica rol admin.<br>3. Ejecuta la operación (soft delete en usuarios también).<br>4. Responde `200 OK`. |
 | **Flujo alterno**| 2a. No autorizado → `403 Forbidden`.                           |
 
+> ⚠️ **CU pendiente de implementar** — no existe ruta, controlador ni servicio.
+
 ---
 
 ## Resumen de Endpoints
 
-| Método   | Ruta                                  | Auth     | Rol    | Descripción                          |
-|----------|---------------------------------------|----------|--------|--------------------------------------|
-| POST     | `/api/v1/auth/register`                  | No       | —      | Registro de usuario                  |
-| POST     | `/api/v1/auth/login`                     | No       | —      | Inicio de sesión                     |
-| GET      | `/api/v1/auth/profile`                   | Sí       | —      | Perfil del usuario autenticado       |
-| GET      | `/api/v1/health`                         | No       | —      | Health check                         |
-| POST     | `/api/v1/especies`                       | Sí       | admin  | Crear especie                        |
-| GET      | `/api/v1/especies`                       | Sí       | —      | Listar especies                      |
-| GET      | `/api/v1/especies/:id`                   | Sí       | —      | Detalle de especie                   |
-| PUT      | `/api/v1/especies/:id`                   | Sí       | admin  | Actualizar especie                   |
-| DELETE   | `/api/v1/especies/:id`                   | Sí       | admin  | Soft delete especie                  |
-| POST     | `/api/v1/razas`                          | Sí       | admin  | Crear raza                           |
-| GET      | `/api/v1/razas`                          | Sí       | —      | Listar razas                         |
-| GET      | `/api/v1/razas/:id`                      | Sí       | —      | Detalle de raza                      |
-| PUT      | `/api/v1/razas/:id`                      | Sí       | admin  | Actualizar raza                      |
-| DELETE   | `/api/v1/razas/:id`                      | Sí       | admin  | Soft delete raza                     |
-| POST     | `/api/v1/animales`                       | Sí       | —      | Crear animal                         |
-| GET      | `/api/v1/animales`                       | Sí       | —      | Listar animales                      |
-| GET      | `/api/v1/animales/:id`                   | Sí       | —      | Detalle de animal                    |
-| PUT      | `/api/v1/animales/:id`                   | Sí       | —      | Actualizar animal                    |
-| DELETE   | `/api/v1/animales/:id`                   | Sí       | —      | Soft delete animal                   |
-| PATCH    | `/api/v1/animales/:id/padres`            | Sí       | —      | Asignar padres                       |
-| GET      | `/api/v1/animales/:id/arbol-genealogico` | Sí       | —      | Árbol genealógico                    |
-| GET      | `/api/v1/animales/:id/hijos`             | Sí       | —      | Hijos directos                       |
-| GET      | `/api/v1/animales/:id/hermanos`          | Sí       | —      | Hermanos                             |
-| GET      | `/api/v1/usuarios`                       | Sí       | admin  | Listar usuarios                      |
-| PATCH    | `/api/v1/usuarios/:id`                   | Sí       | admin  | Desactivar usuario (body: `{ active: false }`) |
+| Método   | Ruta                                  | Auth     | Rol    | Descripción                          | Estado |
+|----------|---------------------------------------|----------|--------|--------------------------------------|--------|
+| POST     | `/api/v1/auth/register`                  | No       | —      | Registro de usuario                  | ✅ |
+| POST     | `/api/v1/auth/login`                     | No       | —      | Inicio de sesión                     | ✅ |
+| GET      | `/api/v1/auth/profile`                   | Sí       | —      | Perfil del usuario autenticado       | ✅ |
+| GET      | `/api/v1/health`                         | No       | —      | Health check                         | ✅ |
+| POST     | `/api/v1/especies`                       | Sí       | admin  | Crear especie                        | ✅ |
+| GET      | `/api/v1/especies`                       | No       | —      | Listar especies                      | ✅ |
+| GET      | `/api/v1/especies/:id`                   | No       | —      | Detalle de especie                   | ✅ |
+| PUT      | `/api/v1/especies/:id`                   | Sí       | admin  | Actualizar especie                   | ✅ |
+| DELETE   | `/api/v1/especies/:id`                   | Sí       | admin  | Soft delete especie                  | ✅ |
+| POST     | `/api/v1/razas`                          | Sí       | admin  | Crear raza                           | ✅ |
+| GET      | `/api/v1/razas`                          | No       | —      | Listar razas (filtro `?especie=id`) | ✅ |
+| GET      | `/api/v1/razas/:id`                      | No       | —      | Detalle de raza                      | ✅ |
+| PUT      | `/api/v1/razas/:id`                      | Sí       | admin  | Actualizar raza                      | ✅ |
+| DELETE   | `/api/v1/razas/:id`                      | Sí       | admin  | Soft delete raza                     | ✅ |
+| POST     | `/api/v1/animales`                       | Sí       | —      | Crear animal                         | ⬜ |
+| GET      | `/api/v1/animales`                       | Sí       | —      | Listar animales                      | ⬜ |
+| GET      | `/api/v1/animales/:id`                   | Sí       | —      | Detalle de animal                    | ⬜ |
+| PUT      | `/api/v1/animales/:id`                   | Sí       | —      | Actualizar animal                    | ⬜ |
+| DELETE   | `/api/v1/animales/:id`                   | Sí       | —      | Soft delete animal                   | ⬜ |
+| PATCH    | `/api/v1/animales/:id/padres`            | Sí       | —      | Asignar padres                       | ⬜ |
+| GET      | `/api/v1/animales/:id/arbol-genealogico` | Sí       | —      | Árbol genealógico                    | ⬜ |
+| GET      | `/api/v1/animales/:id/hijos`             | Sí       | —      | Hijos directos                       | ⬜ |
+| GET      | `/api/v1/animales/:id/hermanos`          | Sí       | —      | Hermanos                             | ⬜ |
+| GET      | `/api/v1/usuarios`                       | Sí       | admin  | Listar usuarios                      | ⬜ |
+| PATCH    | `/api/v1/usuarios/:id`                   | Sí       | admin  | Desactivar usuario (body: `{ active: false }`) | ⬜ |
