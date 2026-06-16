@@ -1,0 +1,222 @@
+paths:
+  /api/v1/animales:
+    get:
+      tags: [Animales]
+      summary: Listar animales activos
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: nombre
+          schema:
+            type: string
+          description: Filtra por nombre
+        - in: query
+          name: especie
+          schema:
+            type: string
+          description: Filtra por ID de especie
+        - in: query
+          name: raza
+          schema:
+            type: string
+          description: Filtra por ID de raza
+        - in: query
+          name: sexo
+          schema:
+            type: string
+            enum: [macho, hembra]
+          description: Filtra por sexo
+        - in: query
+          name: propietario
+          schema:
+            type: string
+          description: Filtra por ID de propietario
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+          description: Pagina solicitada
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+          description: Tamano de pagina
+      responses:
+        200:
+          description: Lista de animales
+    post:
+      tags: [Animales]
+      summary: Crear un animal
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre, especie, raza, sexo, fechaNacimiento]
+              properties:
+                nombre:
+                  type: string
+                especie:
+                  type: string
+                raza:
+                  type: string
+                sexo:
+                  type: string
+                  enum: [macho, hembra]
+                fechaNacimiento:
+                  type: string
+                  format: date-time
+                peso:
+                  type: number
+                color:
+                  type: string
+                identificador:
+                  type: string
+                fotoUrl:
+                  type: string
+                notas:
+                  type: string
+                padre:
+                  type: string
+                  nullable: true
+                madre:
+                  type: string
+                  nullable: true
+      responses:
+        201:
+          description: Animal creado
+  /api/v1/animales/{id}:
+    get:
+      tags: [Animales]
+      summary: Obtener un animal por ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Animal encontrado
+    put:
+      tags: [Animales]
+      summary: Actualizar un animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        200:
+          description: Animal actualizado
+    delete:
+      tags: [Animales]
+      summary: Desactivar un animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Animal desactivado
+  /api/v1/animales/{id}/arbol:
+    get:
+      tags: [Animales]
+      summary: Obtener el arbol genealogico de un animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: generaciones
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+          description: Profundidad maxima del arbol
+      responses:
+        200:
+          description: Arbol genealogico
+  /api/v1/animales/{id}/hijos:
+    get:
+      tags: [Animales]
+      summary: Listar hijos de un animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Lista de hijos
+  /api/v1/animales/{id}/hermanos:
+    get:
+      tags: [Animales]
+      summary: Listar hermanos de un animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Lista de hermanos
+  /api/v1/animales/{id}/padres:
+    post:
+      tags: [Animales]
+      summary: Asignar o desasignar padres
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                padre:
+                  type: string
+                  nullable: true
+                madre:
+                  type: string
+                  nullable: true
+      responses:
+        200:
+          description: Padres actualizados
