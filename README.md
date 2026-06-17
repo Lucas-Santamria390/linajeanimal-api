@@ -97,7 +97,7 @@ npm run dev
 | PUT | `/api/v1/razas/:id` | Sí | admin | Actualizar raza |
 | DELETE | `/api/v1/razas/:id` | Sí | admin | Desactivar raza |
 
-### Animales *(próximamente)*
+### Animales
 
 | Método | Ruta | Auth | Rol | Descripción |
 |--------|------|------|-----|-------------|
@@ -106,7 +106,8 @@ npm run dev
 | GET | `/api/v1/animales/:id` | Sí | — | Detalle de animal |
 | PUT | `/api/v1/animales/:id` | Sí | — | Actualizar animal |
 | DELETE | `/api/v1/animales/:id` | Sí | — | Desactivar animal |
-| PATCH | `/api/v1/animales/:id/padres` | Sí | — | Asignar padres |
+| POST | `/api/v1/animales/:id/padres` | Sí | — | Asignar o desasignar padres |
+| PATCH | `/api/v1/animales/:id/padres` | Sí | — | Asignar o desasignar padres (alias) |
 | GET | `/api/v1/animales/:id/arbol-genealogico` | Sí | — | Árbol genealógico |
 | GET | `/api/v1/animales/:id/hijos` | Sí | — | Hijos directos |
 | GET | `/api/v1/animales/:id/hermanos` | Sí | — | Hermanos |

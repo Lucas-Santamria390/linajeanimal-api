@@ -1,0 +1,691 @@
+paths:
+  /api/v1/animales:
+    get:
+      tags: [Animales]
+      summary: Listar animales activos
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: nombre
+          schema:
+            type: string
+          description: Filtra por nombre
+        - in: query
+          name: especie
+          schema:
+            type: string
+          description: Filtra por ID de especie
+        - in: query
+          name: raza
+          schema:
+            type: string
+          description: Filtra por ID de raza
+        - in: query
+          name: sexo
+          schema:
+            type: string
+            enum: [macho, hembra]
+          description: Filtra por sexo
+        - in: query
+          name: propietario
+          schema:
+            type: string
+          description: Filtra por ID de propietario
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+          description: Pagina solicitada
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+          description: Tamano de pagina
+      responses:
+        200:
+          description: Lista de animales
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+                      pages:
+                        type: integer
+        401:
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags: [Animales]
+      summary: Crear un animal
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre, especie, raza, sexo, fechaNacimiento]
+              properties:
+                nombre:
+                  type: string
+                  description: Nombre del animal
+                especie:
+                  type: string
+                  description: ID de la especie
+                raza:
+                  type: string
+                  description: ID de la raza
+                sexo:
+                  type: string
+                  enum: [macho, hembra]
+                  description: Sexo del animal
+                fechaNacimiento:
+                  type: string
+                  format: date-time
+                  description: Fecha de nacimiento (no puede ser futura)
+                peso:
+                  type: number
+                  description: Peso en kg
+                color:
+                  type: string
+                  description: Color del animal
+                identificador:
+                  type: string
+                  description: Identificador unico
+                fotoUrl:
+                  type: string
+                  description: URL de la foto
+                notas:
+                  type: string
+                  description: Notas adicionales
+                padre:
+                  type: string
+                  nullable: true
+                  description: ID del padre (debe ser macho y misma especie)
+                madre:
+                  type: string
+                  nullable: true
+                  description: ID de la madre (debe ser hembra y misma especie)
+      responses:
+        201:
+          description: Animal creado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+        400:
+          description: Datos invalidos (validacion)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: Conflicto (identificador duplicado)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/animales/{id}:
+    get:
+      tags: [Animales]
+      summary: Obtener un animal por ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID del animal
+      responses:
+        200:
+          description: Animal encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+        400:
+          description: ID invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Animal no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [Animales]
+      summary: Actualizar un animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID del animal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                  description: Nombre del animal
+                especie:
+                  type: string
+                  description: ID de la especie
+                raza:
+                  type: string
+                  description: ID de la raza
+                sexo:
+                  type: string
+                  enum: [macho, hembra]
+                  description: Sexo del animal
+                fechaNacimiento:
+                  type: string
+                  format: date-time
+                  description: Fecha de nacimiento (no puede ser futura)
+                peso:
+                  type: number
+                  description: Peso en kg
+                color:
+                  type: string
+                  description: Color del animal
+                identificador:
+                  type: string
+                  description: Identificador unico
+                fotoUrl:
+                  type: string
+                  description: URL de la foto
+                notas:
+                  type: string
+                  description: Notas adicionales
+      responses:
+        200:
+          description: Animal actualizado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+        400:
+          description: Datos invalidos (validacion)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Sin permisos (no eres el propietario ni admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Animal no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [Animales]
+      summary: Desactivar un animal (soft delete)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID del animal
+      responses:
+        200:
+          description: Animal desactivado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+        400:
+          description: ID invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Sin permisos (no eres el propietario ni admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Animal no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/animales/{id}/arbol-genealogico:
+    get:
+      tags: [Animales]
+      summary: Obtener el arbol genealogico de un animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID del animal
+        - in: query
+          name: generaciones
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+          description: Profundidad maxima del arbol (default 3, max 5)
+      responses:
+        200:
+          description: Arbol genealogico
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      generaciones:
+                        type: integer
+                      arbol:
+                        type: object
+        400:
+          description: ID invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Animal no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/animales/{id}/hijos:
+    get:
+      tags: [Animales]
+      summary: Listar hijos directos de un animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID del animal
+      responses:
+        200:
+          description: Lista de hijos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+        400:
+          description: ID invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Animal no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/animales/{id}/hermanos:
+    get:
+      tags: [Animales]
+      summary: Listar hermanos de un animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID del animal
+      responses:
+        200:
+          description: Lista de hermanos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+        400:
+          description: ID invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Animal no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/animales/{id}/padres:
+    post:
+      tags: [Animales]
+      summary: Asignar padres a un animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID del animal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                padre:
+                  type: string
+                  nullable: true
+                  description: ID del padre (null para desasignar)
+                madre:
+                  type: string
+                  nullable: true
+                  description: ID de la madre (null para desasignar)
+      responses:
+        200:
+          description: Padres actualizados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+        400:
+          description: Datos invalidos (validacion)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Sin permisos (no eres el propietario ni admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Animal no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags: [Animales]
+      summary: Asignar o desasignar padres (alias de POST)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID del animal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                padre:
+                  type: string
+                  nullable: true
+                  description: ID del padre (null para desasignar)
+                madre:
+                  type: string
+                  nullable: true
+                  description: ID de la madre (null para desasignar)
+      responses:
+        200:
+          description: Padres actualizados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+        400:
+          description: Datos invalidos (validacion)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Sin permisos (no eres el propietario ni admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Animal no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string

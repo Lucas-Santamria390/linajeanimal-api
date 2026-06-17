@@ -7,6 +7,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 const especiesRoutes = require('./routes/especiesRoutes');
 const razasRoutes = require('./routes/razasRoutes');
+const animalesRoutes = require('./routes/animalesRoutes');
 const authRoutes = require('./routes/authRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -26,6 +27,7 @@ app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/especies', especiesRoutes);
 app.use('/api/v1/razas', razasRoutes);
+app.use('/api/v1/animales', animalesRoutes);
 
 app.use(errorHandler);
 
