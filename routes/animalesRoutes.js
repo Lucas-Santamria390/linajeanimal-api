@@ -100,13 +100,6 @@ router.delete('/:id',
   controller.remove
 );
 
-router.get('/:id/arbol',
-  auth,
-  param('id').isMongoId().withMessage('ID invalido'),
-  validarCampos,
-  controller.tree
-);
-
 router.get('/:id/arbol-genealogico',
   auth,
   param('id').isMongoId().withMessage('ID invalido'),

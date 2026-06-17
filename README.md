@@ -107,7 +107,8 @@ npm run dev
 | PUT | `/api/v1/animales/:id` | Sí | — | Actualizar animal |
 | DELETE | `/api/v1/animales/:id` | Sí | — | Desactivar animal |
 | POST | `/api/v1/animales/:id/padres` | Sí | — | Asignar o desasignar padres |
-| GET | `/api/v1/animales/:id/arbol` | Sí | — | Árbol genealógico |
+| PATCH | `/api/v1/animales/:id/padres` | Sí | — | Asignar o desasignar padres (alias) |
+| GET | `/api/v1/animales/:id/arbol-genealogico` | Sí | — | Árbol genealógico |
 | GET | `/api/v1/animales/:id/hijos` | Sí | — | Hijos directos |
 | GET | `/api/v1/animales/:id/hermanos` | Sí | — | Hermanos |
 
