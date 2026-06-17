@@ -33,7 +33,191 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+    post:
+      tags: [Usuarios]
+      summary: Crear un usuario (admin)
+      description: Crea un nuevo usuario. A diferencia del registro público, permite asignar rol (admin/user). Solo accesible para administradores.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre, email, password]
+              properties:
+                nombre:
+                  type: string
+                  description: Nombre del usuario
+                email:
+                  type: string
+                  format: email
+                  description: Correo electrónico del usuario
+                password:
+                  type: string
+                  minLength: 6
+                  description: Contraseña (mínimo 6 caracteres)
+                rol:
+                  type: string
+                  enum: [admin, user]
+                  description: Rol del usuario (por defecto 'user')
+      responses:
+        201:
+          description: Usuario creado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Usuario'
+        400:
+          description: Datos inválidos (error de validación)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado (token inválido o ausente)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Sin permisos (rol no admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: El email ya está registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/v1/usuarios/{id}:
+    get:
+      tags: [Usuarios]
+      summary: Obtener detalle de un usuario (admin)
+      description: Retorna la información completa de un usuario específico. Solo accesible para administradores.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID del usuario
+      responses:
+        200:
+          description: Datos del usuario
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Usuario'
+        400:
+          description: ID inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado (token inválido o ausente)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Sin permisos (rol no admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [Usuarios]
+      summary: Actualizar un usuario (admin)
+      description: Actualiza los datos de un usuario (nombre, email, rol). No permite cambiar la contraseña. Solo accesible para administradores.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID del usuario a actualizar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                  description: Nombre del usuario
+                email:
+                  type: string
+                  format: email
+                  description: Correo electrónico del usuario
+                rol:
+                  type: string
+                  enum: [admin, user]
+                  description: Rol del usuario
+      responses:
+        200:
+          description: Usuario actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Usuario'
+        400:
+          description: Datos inválidos o ID inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado (token inválido o ausente)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Sin permisos (rol no admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     delete:
       tags: [Usuarios]
       summary: Desactivar un usuario (admin)
