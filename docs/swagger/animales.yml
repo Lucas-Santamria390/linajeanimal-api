@@ -318,7 +318,7 @@ paths:
                 $ref: '#/components/schemas/Error'
     delete:
       tags: [Animales]
-      summary: Desactivar un animal (soft delete)
+      summary: Desactivar un animal (soft delete, solo admin)
       security:
         - bearerAuth: []
       parameters:
@@ -354,7 +354,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         403:
-          description: Sin permisos (no eres el propietario ni admin)
+          description: Sin permisos (se requiere rol admin)
           content:
             application/json:
               schema:
