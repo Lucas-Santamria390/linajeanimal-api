@@ -63,4 +63,26 @@ const deactivate = async (id, adminId) => {
   return usuario;
 };
 
-module.exports = { list, getById, create, update, deactivate };
+const setActive = async (id, active, adminId) => {
+  if (id === adminId.toString() && active === false) {
+    const err = new Error('No puedes desactivar tu propia cuenta');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const usuario = await Usuario.findByIdAndUpdate(
+    id,
+    { active },
+    { new: true, runValidators: true }
+  );
+
+  if (!usuario) {
+    const err = new Error('Usuario no encontrado');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  return usuario;
+};
+
+module.exports = { list, getById, create, update, deactivate, setActive };

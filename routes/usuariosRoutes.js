@@ -59,4 +59,13 @@ router.delete('/:id',
   controller.deactivate
 );
 
+router.patch('/:id',
+  auth,
+  authorize('admin'),
+  param('id').isMongoId().withMessage('ID inválido').escape(),
+  body('active').isBoolean().withMessage('active debe ser un valor booleano').toBoolean(),
+  validarCampos,
+  controller.setActive
+);
+
 module.exports = router;

@@ -45,4 +45,13 @@ const deactivate = async (req, res, next) => {
   }
 };
 
-module.exports = { list, getById, create, update, deactivate };
+const setActive = async (req, res, next) => {
+  try {
+    const usuario = await usuarioService.setActive(req.params.id, req.body.active, req.usuario._id);
+    res.json({ success: true, data: usuario });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { list, getById, create, update, deactivate, setActive };
