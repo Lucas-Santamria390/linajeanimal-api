@@ -163,7 +163,7 @@ npm install --save-dev nodemon
 
 ---
 
-## Fase 5: CRUD de Animales con relaciones (pendiente)
+## Fase 5: CRUD de Animales con relaciones ✅
 
 > Dependencias: Fases 3 y 4  
 > Objetivo: Implementar CRUD completo de Animales con validaciones de parentesco.
@@ -198,7 +198,7 @@ npm install --save-dev nodemon
 
 ---
 
-## Fase 6: Rutas de dominio genealógico (pendiente)
+## Fase 6: Rutas de dominio genealógico ✅
 
 > Dependencias: Fase 5  
 > Objetivo: Implementar endpoints específicos de genealogía (árbol, hijos, hermanos, padres).
@@ -237,7 +237,7 @@ async function construirArbol(animalId, profundidad = 3, actual = 0) {
 
 ---
 
-## Fase 7: Administración de usuarios (solo admin) (pendiente)
+## Fase 7: Administración de usuarios (solo admin) ✅
 
 > Dependencias: Fase 4  
 > Objetivo: Endpoints para que admin gestione usuarios.
@@ -245,7 +245,7 @@ async function construirArbol(animalId, profundidad = 3, actual = 0) {
 | #   | Tarea                                                   | Archivos involucrados        | Estimación |
 |-----|---------------------------------------------------------|------------------------------|------------|
 | 7.1 | Implementar `GET /api/v1/usuarios` (listar usuarios)       | service + controller + route | 10 min     |
-| 7.2 | Implementar `PATCH /api/v1/usuarios/:id` (body: `{ active: false }`, soft delete) | service + controller + route | 10 min     |
+| 7.2 | Implementar `DELETE /api/v1/usuarios/:id` (soft delete) | service + controller + route | 10 min     |
 | 7.3 | Registrar rutas de usuarios en `app.js`                 | `app.js`                     | 5 min      |
 
 ---
@@ -366,22 +366,22 @@ incluye el servicio `mongodb`, por lo que no se necesita MongoDB instalado en el
 │   ├── authService.js            # Fase 4 ✅
 │   ├── especieService.js         # Fase 3 ✅
 │   ├── razaService.js            # Fase 3 ✅
-│   ├── animalService.js          # Fase 5 y 6 ❌ pendiente
-│   └── usuarioService.js         # Fase 7 ❌ pendiente
+│   ├── animalService.js          # Fase 5 y 6 ✅
+│   └── usuarioService.js         # Fase 7 ✅
 │
 ├── controllers/
 │   ├── authController.js         # Fase 4 ✅
 │   ├── especieController.js      # Fase 3 ✅
 │   ├── razaController.js         # Fase 3 ✅
-│   ├── animalController.js       # Fase 5 y 6 ❌ pendiente
-│   └── usuarioController.js      # Fase 7 ❌ pendiente
+│   ├── animalController.js       # Fase 5 y 6 ✅
+│   └── usuarioController.js      # Fase 7 ✅
 │
 ├── routes/
 │   ├── authRoutes.js             # Fase 4 ✅
 │   ├── especiesRoutes.js         # Fase 3 ✅
 │   ├── razasRoutes.js            # Fase 3 ✅
-│   ├── animalesRoutes.js         # Fase 5 y 6 ❌ pendiente
-│   ├── usuariosRoutes.js         # Fase 7 ❌ pendiente
+│   ├── animalesRoutes.js         # Fase 5 y 6 ✅
+│   ├── usuariosRoutes.js         # Fase 7 ✅
 │   └── healthRoutes.js           # Fase 1 (inline en app.js) ✅
 │
 ├── Dockerfile                    # Fase 0 ✅
@@ -394,7 +394,9 @@ incluye el servicio `mongodb`, por lo que no se necesita MongoDB instalado en el
     ├── modelo-de-datos.md        # Documentación ✅
     ├── plan.md                   # Documentación ✅
     └── swagger/
-        └── auth.yml              # Documentación ✅
+        ├── auth.yml              # Documentación ✅
+        ├── animales.yml          # Documentación ✅
+        └── usuarios.yml          # Documentación ✅
 ```
 
 ---
@@ -416,7 +418,7 @@ incluye el servicio `mongodb`, por lo que no se necesita MongoDB instalado en el
 | 11  | Helmet, CORS                                      | 1    | ✅ |
 | 12  | Sin password en respuestas                        | 2    | ✅ |
 | 13  | Seed data                                         | 8    | ❌ |
-| 14  | Postman collection o Swagger                      | 8    | ⚠️ (solo Swagger) |
+| 14  | Postman collection o Swagger                      | 8    | ✅ (Swagger: auth, animales, usuarios) |
 | 15  | .env.example presente                             | 0    | ✅ |
 | 16  | Health check endpoint                             | 1    | ✅ |
 | 17  | README completo                                   | 8    | ✅ |

@@ -3,6 +3,7 @@ const { body, param, validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 const controller = require('../controllers/animalController');
 const auth = require('../middleware/auth');
+const authorize = require('../middleware/role');
 
 const router = Router();
 
@@ -95,6 +96,7 @@ router.put('/:id',
 
 router.delete('/:id',
   auth,
+  authorize('admin'),
   param('id').isMongoId().withMessage('ID invalido'),
   validarCampos,
   controller.remove

@@ -112,6 +112,13 @@ npm run dev
 | GET | `/api/v1/animales/:id/hijos` | Sí | — | Hijos directos |
 | GET | `/api/v1/animales/:id/hermanos` | Sí | — | Hermanos |
 
+### Usuarios
+
+| Método | Ruta | Auth | Rol | Descripción |
+|--------|------|------|-----|-------------|
+| GET | `/api/v1/usuarios` | Sí | admin | Listar todos los usuarios |
+| DELETE | `/api/v1/usuarios/:id` | Sí | admin | Desactivar usuario (soft delete) |
+
 ### Utilidades
 
 | Método | Ruta | Descripción |
