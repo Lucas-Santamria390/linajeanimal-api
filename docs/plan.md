@@ -426,8 +426,76 @@ incluye el servicio `mongodb`, por lo que no se necesita MongoDB instalado en el
 
 ---
 
-## 5. Histórico de Cambios
+## 5. Fase 9 — Optimización de esquema MongoDB (futuro sprint)
+
+> Dependencias: Fase 8  
+> Objetivo: Optimizar el diseño de documentos según patrones MongoDB para reducir consultas y mejorar rendimiento.
+
+| #   | Tarea                                                              | Patrón            | Archivos involucrados      | Estimación |
+|-----|--------------------------------------------------------------------|-------------------|----------------------------|------------|
+| 9.1 | Agregar Extended Reference en `Animal` para `especie` (`{ _id, nombre }`) | Extended Reference | `models/Animal.js`, `services/animalService.js`, seed | 20 min |
+| 9.2 | Agregar Extended Reference en `Animal` para `raza` (`{ _id, nombre }`)     | Extended Reference | `models/Animal.js`, `services/animalService.js`, seed | 15 min |
+| 9.3 | Agregar Extended Reference en `Animal` para `propietario` (`{ _id, nombre, email }`) | Extended Reference | `models/Animal.js`, `services/animalService.js`, seed | 15 min |
+| 9.4 | Agregar campo computado `cantidadHijos` en `Animal` con `$inc`       | Computed          | `models/Animal.js`, `services/animalService.js` | 20 min |
+| 9.5 | Agregar campo computado `cantidadAnimales` en `Especie` y `Raza`    | Computed          | `models/Especie.js`, `models/Raza.js`, services | 20 min |
+| 9.6 | Sincronización: hook `post('save')` en `Especie` para actualizar nombres en `Animal` | Extended Reference | `models/Especie.js`, `services/animalService.js` | 15 min |
+| 9.7 | Sincronización: hook `post('save')` en `Raza` para actualizar nombres en `Animal` | Extended Reference | `models/Raza.js`, `services/animalService.js` | 15 min |
+| 9.8 | Migración: script para backfill de datos existentes                | —                 | `scripts/migrate-v2.js`    | 30 min |
+| 9.9 | Eliminar `populate` redundantes en `animalService` (especie, raza, propietario) | —                 | `services/animalService.js` | 10 min |
+| 9.10 | Agregar índices compuestos faltantes según queries de la app       | —                 | Modelos                   | 10 min |
+
+**Total estimado:** 2h 50min
+
+### Detalle de cambios planeados
+
+```javascript
+// models/Animal.js — después de Fase 9
+const animalSchema = new mongoose.Schema({
+  nombre: { type: String, required: true, trim: true },
+  especie: {
+    _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Especie', required: true },
+    nombre: { type: String, required: true }
+  },
+  raza: {
+    _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Raza', required: true },
+    nombre: { type: String, required: true }
+  },
+  propietario: {
+    _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', required: true },
+    nombre: { type: String, required: true },
+    email: { type: String, required: true }
+  },
+  padre: { type: mongoose.Schema.Types.ObjectId, ref: 'Animal', default: null },
+  madre: { type: mongoose.Schema.Types.ObjectId, ref: 'Animal', default: null },
+  cantidadHijos: { type: Number, default: 0 },
+  // ... resto de campos igual
+});
+```
+
+```javascript
+// En animalService.create — actualizar cantidadHijos del padre/madre
+if (payload.padre) {
+  await Animal.findByIdAndUpdate(payload.padre, { $inc: { cantidadHijos: 1 } });
+}
+if (payload.madre) {
+  await Animal.findByIdAndUpdate(payload.madre, { $inc: { cantidadHijos: 1 } });
+}
+```
+
+### Efecto esperado
+
+| Consulta | Antes (populates) | Después (populates) | Mejora |
+|---|---|---|---|
+| `GET /api/v1/animales` | 5 por documento | 2 (padre, madre) | −60% |
+| `GET /api/v1/animales/:id` | 5 | 2 (padre, madre) | −60% |
+| `GET /arbol-genealogico/:id` | 5 por nodo | 0 (todo en el doc) | −100% |
+| `GET /:id/hijos` | 1 query + 5 populates | 1 query + 2 populates | −60% |
+
+---
+
+## 6. Histórico de Cambios
 
 | Versión | Fecha      | Descripción            | Autor  |
 |---------|------------|------------------------|--------|
 | 1.0     | 2026-06-06 | Versión inicial                          | Doc Team |
+| 1.1     | 2026-06-19 | Agregada Fase 9 — Optimización MongoDB   | Doc Team |
