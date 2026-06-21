@@ -141,6 +141,7 @@ http://localhost:3000/api/v1/docs
 | `npm run docker` | Levantar API + MongoDB con Docker Compose |
 | `npm run dev` | Iniciar en modo desarrollo con nodemon |
 | `npm start` | Iniciar en modo producción |
+| `npm run seed` | Poblar la base de datos con datos de prueba |
 
 ## Estructura del proyecto
 
@@ -157,8 +158,23 @@ http://localhost:3000/api/v1/docs
 ├── app.js           # Configuración de Express
 ├── Dockerfile       # Imagen multi-stage
 ├── docker-compose.yml  # Servicios API + MongoDB
-└── seed.js          # Datos de prueba (próximamente)
+└── seed.js          # Script de seed con datos de prueba
 ```
+
+## Seed de prueba
+
+El script `npm run seed` limpia las colecciones principales y crea datos de ejemplo
+para:
+
+- 2 usuarios de prueba: `admin` y `user`
+- 3 especies: `Perro`, `Gato` y `Caballo`
+- 6 razas vinculadas a sus especies
+- 10+ animales, incluyendo una linea genealogica de 3 generaciones
+
+Credenciales creadas por el seed:
+
+- `admin@linajeanimal.test` / `Admin123!`
+- `usuario@linajeanimal.test` / `User123!`
 
 ## Licencia
 
