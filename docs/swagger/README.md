@@ -59,8 +59,8 @@ components:
 |--------|---------|
 | Auth | `docs/swagger/auth.yml` |
 | Animales | `docs/swagger/animales.yml` |
-| Especies | *(pendiente)* |
-| Razas | *(pendiente)* |
+| Especies | `docs/swagger/especies.yml` |
+| Razas | `docs/swagger/razas.yml` |
 
 ### 2. Documentar siempre estas responses
 
