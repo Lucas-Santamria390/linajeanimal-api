@@ -324,3 +324,11 @@ components:
           type: string
           format: date-time
           description: Fecha de ultima actualizacion
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
