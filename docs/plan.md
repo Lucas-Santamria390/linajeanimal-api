@@ -395,6 +395,8 @@ incluye el servicio `mongodb`, por lo que no se necesita MongoDB instalado en el
     ├── plan.md                   # Documentación ✅
     └── swagger/
         ├── auth.yml              # Documentación ✅
+        ├── especies.yml          # Documentación ✅
+        ├── razas.yml             # Documentación ✅
         ├── animales.yml          # Documentación ✅
         └── usuarios.yml          # Documentación ✅
 ```
@@ -418,7 +420,7 @@ incluye el servicio `mongodb`, por lo que no se necesita MongoDB instalado en el
 | 11  | Helmet, CORS                                      | 1    | ✅ |
 | 12  | Sin password en respuestas                        | 2    | ✅ |
 | 13  | Seed data                                         | 8    | ❌ |
-| 14  | Postman collection o Swagger                      | 8    | ✅ (Swagger: auth, animales, usuarios) |
+| 14  | Postman collection o Swagger                      | 8    | ✅ (Swagger: auth, especies, razas, animales, usuarios) |
 | 15  | .env.example presente                             | 0    | ✅ |
 | 16  | Health check endpoint                             | 1    | ✅ |
 | 17  | README completo                                   | 8    | ✅ |
