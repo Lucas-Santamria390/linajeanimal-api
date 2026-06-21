@@ -1,0 +1,334 @@
+paths:
+  /api/v1/razas:
+    get:
+      tags: [Razas]
+      summary: Listar razas activas
+      parameters:
+        - in: query
+          name: especie
+          schema:
+            type: string
+          description: Filtra por ID de especie
+      responses:
+        200:
+          description: Lista de razas activas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Raza'
+        400:
+          description: ID de especie invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags: [Razas]
+      summary: Crear una raza
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre, especie]
+              properties:
+                nombre:
+                  type: string
+                  description: Nombre de la raza
+                descripcion:
+                  type: string
+                  nullable: true
+                  description: Descripcion opcional de la raza
+                especie:
+                  type: string
+                  description: ID de la especie asociada
+      responses:
+        201:
+          description: Raza creada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Raza'
+        400:
+          description: Datos invalidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Sin permisos (se requiere rol admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Especie no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: La raza ya existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/razas/{id}:
+    get:
+      tags: [Razas]
+      summary: Obtener una raza por ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID de la raza
+      responses:
+        200:
+          description: Raza encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Raza'
+        400:
+          description: ID invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Raza no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [Razas]
+      summary: Actualizar una raza
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID de la raza
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                  description: Nombre de la raza
+                descripcion:
+                  type: string
+                  nullable: true
+                  description: Descripcion opcional de la raza
+                especie:
+                  type: string
+                  description: ID de la especie asociada
+      responses:
+        200:
+          description: Raza actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Raza'
+        400:
+          description: Datos invalidos o ID invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Sin permisos (se requiere rol admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Raza o especie no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: La raza ya existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [Razas]
+      summary: Desactivar una raza
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID de la raza
+      responses:
+        200:
+          description: Raza desactivada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Raza'
+        400:
+          description: ID invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Sin permisos (se requiere rol admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Raza no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    EspecieRef:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: ID de la especie
+        nombre:
+          type: string
+          description: Nombre de la especie
+    Raza:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: ID de la raza
+        nombre:
+          type: string
+          description: Nombre de la raza
+        descripcion:
+          type: string
+          nullable: true
+          description: Descripcion de la raza
+        especie:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/EspecieRef'
+          description: ID de la especie o especie poblada con nombre
+        active:
+          type: boolean
+          description: Estado activo de la raza
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha de creacion
+        updatedAt:
+          type: string
+          format: date-time
+          description: Fecha de ultima actualizacion
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
