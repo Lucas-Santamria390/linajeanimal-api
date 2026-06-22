@@ -17,15 +17,19 @@ const conectarTestDB = async () => {
   }
 
   await mongoose.connect(uri);
+  process.env.MONGODB_URI = uri;
 };
 
 /**
  * Desconecta y detiene el servidor en memoria.
  */
 const desconectarTestDB = async () => {
-  await mongoose.disconnect();
-  if (mongoServer) {
-    await mongoServer.stop();
+  try {
+    await mongoose.disconnect();
+  } finally {
+    if (mongoServer) {
+      await mongoServer.stop();
+    }
   }
 };
 
@@ -34,10 +38,8 @@ const desconectarTestDB = async () => {
  */
 const limpiarTestDB = async () => {
   const collections = mongoose.connection.collections;
-  for (const key in collections) {
-    const collection = collections[key];
-    await collection.deleteMany({});
-  }
+  const promises = Object.keys(collections).map(key => collections[key].deleteMany({}));
+  await Promise.all(promises);
 };
 
 module.exports = {
