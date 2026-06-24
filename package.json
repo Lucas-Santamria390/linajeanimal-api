@@ -7,7 +7,9 @@
     "dev": "nodemon server.js",
     "start": "node server.js",
     "docker": "docker compose up --build",
-    "seed": "node seed.js"
+    "seed": "node seed.js",
+    "pretest": "node -e \"require('mongodb-memory-server').MongoMemoryServer.create().then(m => m.stop())\"",
+    "test": "jest --runInBand --detectOpenHandles"
   },
   "keywords": [
     "api",
@@ -32,6 +34,9 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "jest": "^30.4.2",
+    "mongodb-memory-server": "^11.2.0",
+    "nodemon": "^3.1.9",
+    "supertest": "^7.2.2"
   }
 }
