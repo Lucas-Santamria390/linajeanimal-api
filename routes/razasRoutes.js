@@ -1,19 +1,11 @@
 const { Router } = require('express');
-const { body, param, query, validationResult } = require('express-validator');
+const { body, param, query } = require('express-validator');
 const controller = require('../controllers/razaController');
 const auth = require('../middleware/auth');
 const authorize = require('../middleware/role');
+const validarCampos = require('../middleware/validarCampos');
 
 const router = Router();
-
-const validarCampos = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    const messages = errors.array().map(e => e.msg).join('; ');
-    return res.status(400).json({ success: false, message: messages });
-  }
-  next();
-};
 
 router.get('/',
   query('especie').optional().isMongoId().withMessage('ID de especie inválido'),
