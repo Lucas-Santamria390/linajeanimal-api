@@ -41,11 +41,24 @@ const update = async (id, data) => {
       throw createError('Especie no encontrada', 404);
     }
   }
-  return Raza.findByIdAndUpdate(id, payload, { new: true, runValidators: true }).populate('especie', 'nombre');
+  const razaActualizada = await Raza.findByIdAndUpdate(id, payload, { new: true, runValidators: true }).populate('especie', 'nombre');
+
+  if (payload.nombre) {
+    try {
+      await Animal.updateMany(
+        { 'raza._id': id },
+        { 'raza.nombre': payload.nombre }
+      );
+    } catch (syncError) {
+      console.error('Error sincronizando nombre de raza en Animal:', syncError);
+    }
+  }
+
+  return razaActualizada;
 };
 
 const remove = async (id) => {
-  const dependencias = await Animal.exists({ raza: id, active: true });
+  const dependencias = await Animal.exists({ 'raza._id': id, active: true });
   if (dependencias) {
     throw createError('No se puede desactivar la raza porque tiene animales activos asociados', 409);
   }

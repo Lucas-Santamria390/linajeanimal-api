@@ -245,10 +245,14 @@ const run = async () => {
   const animalsByKey = {};
 
   for (const item of animalSeed) {
+    const especie = speciesByName[item.especie];
+    const raza = breedsByName[item.raza];
+    const propietario = usersByKey[item.propietario];
+
     const animal = await Animal.create({
       nombre: item.nombre,
-      especie: speciesByName[item.especie]._id,
-      raza: breedsByName[item.raza]._id,
+      especie: { _id: especie._id, nombre: especie.nombre },
+      raza: { _id: raza._id, nombre: raza.nombre },
       sexo: item.sexo,
       fechaNacimiento: item.fechaNacimiento,
       peso: item.peso,
@@ -256,13 +260,27 @@ const run = async () => {
       identificador: item.identificador,
       fotoUrl: item.fotoUrl,
       notas: item.notas,
-      propietario: usersByKey[item.propietario]._id,
+      propietario: { _id: propietario._id, nombre: propietario.nombre, email: propietario.email },
       padre: item.padre ? animalsByKey[item.padre]._id : null,
       madre: item.madre ? animalsByKey[item.madre]._id : null,
       active: item.active !== undefined ? item.active : true,
     });
 
     animalsByKey[item.key] = animal;
+  }
+
+  console.log('Actualizando cantidadHijos y cantidadAnimales...');
+  for (const item of animalSeed) {
+    if (item.padre) {
+      await Animal.findByIdAndUpdate(animalsByKey[item.padre]._id, { $inc: { cantidadHijos: 1 } });
+    }
+    if (item.madre) {
+      await Animal.findByIdAndUpdate(animalsByKey[item.madre]._id, { $inc: { cantidadHijos: 1 } });
+    }
+    const raza = breedsByName[item.raza];
+    const especie = speciesByName[item.especie];
+    await Especie.findByIdAndUpdate(especie._id, { $inc: { cantidadAnimales: 1 } });
+    await Raza.findByIdAndUpdate(raza._id, { $inc: { cantidadAnimales: 1 } });
   }
 
   console.log('\nSeed completado con exito.');
