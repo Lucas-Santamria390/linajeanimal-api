@@ -1,20 +1,12 @@
 const { Router } = require('express');
-const { body, param, validationResult } = require('express-validator');
+const { body, param } = require('express-validator');
 const mongoose = require('mongoose');
 const controller = require('../controllers/animalController');
 const auth = require('../middleware/auth');
 const authorize = require('../middleware/role');
+const validarCampos = require('../middleware/validarCampos');
 
 const router = Router();
-
-const validarCampos = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    const messages = errors.array().map(e => e.msg).join('; ');
-    return res.status(400).json({ success: false, message: messages });
-  }
-  next();
-};
 
 const mongoIdOptional = (field, message) => {
   return body(field)
