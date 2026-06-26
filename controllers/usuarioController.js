@@ -2,8 +2,8 @@ const usuarioService = require('../services/usuarioService');
 
 const list = async (req, res, next) => {
   try {
-    const usuarios = await usuarioService.list();
-    res.json({ success: true, data: usuarios });
+    const result = await usuarioService.list(req.query);
+    res.json({ success: true, ...result });
   } catch (err) {
     next(err);
   }

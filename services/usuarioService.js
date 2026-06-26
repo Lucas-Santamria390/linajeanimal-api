@@ -1,8 +1,23 @@
 const createError = require('../utils/createError');
 const Usuario = require('../models/Usuario');
 
-const list = async () => {
-  return Usuario.find().sort({ createdAt: -1 });
+const list = async (query = {}) => {
+  const filters = {};
+  filters.active = query.active !== undefined ? query.active : true;
+
+  const page = Math.max(Number.parseInt(query.page, 10) || 1, 1);
+  const limit = Math.min(Math.max(Number.parseInt(query.limit, 10) || 20, 1), 100);
+  const skip = (page - 1) * limit;
+
+  const [total, usuarios] = await Promise.all([
+    Usuario.countDocuments(filters),
+    Usuario.find(filters).sort({ createdAt: -1 }).skip(skip).limit(limit),
+  ]);
+
+  return {
+    data: usuarios,
+    pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+  };
 };
 
 const getById = async (id) => {
