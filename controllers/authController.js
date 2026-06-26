@@ -18,6 +18,24 @@ const login = async (req, res, next) => {
   }
 };
 
+const changePassword = async (req, res, next) => {
+  try {
+    const result = await authService.changePassword(req.usuario._id, req.body.currentPassword, req.body.newPassword);
+    res.json({ success: true, data: { usuario: result.usuario, token: result.token } });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const logout = async (req, res, next) => {
+  try {
+    await authService.logout(req.usuario._id);
+    res.json({ success: true, message: 'Sesion cerrada exitosamente' });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const profile = async (req, res, next) => {
   try {
     const usuario = await authService.getProfile(req.usuario._id);
@@ -27,4 +45,4 @@ const profile = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, profile };
+module.exports = { register, login, changePassword, logout, profile };

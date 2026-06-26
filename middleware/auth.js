@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const createError = require('../utils/createError');
 const Usuario = require('../models/Usuario');
 const config = require('../config/env');
 
@@ -6,9 +7,7 @@ const auth = async (req, res, next) => {
   try {
     const header = req.headers.authorization;
     if (!header || !header.startsWith('Bearer ')) {
-      const err = new Error('Acceso no autorizado');
-      err.statusCode = 401;
-      throw err;
+      throw createError('Acceso no autorizado', 401);
     }
 
     const token = header.split(' ')[1];
@@ -16,9 +15,11 @@ const auth = async (req, res, next) => {
 
     const usuario = await Usuario.findById(decoded.id);
     if (!usuario || !usuario.active) {
-      const err = new Error('Usuario no encontrado o desactivado');
-      err.statusCode = 401;
-      throw err;
+      throw createError('Usuario no encontrado o desactivado', 401);
+    }
+
+    if (usuario.tokenVersion !== decoded.tokenVersion) {
+      throw createError('Token invalido (sesion expirada)', 401);
     }
 
     req.usuario = usuario;
@@ -26,7 +27,7 @@ const auth = async (req, res, next) => {
   } catch (err) {
     if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
       err.statusCode = 401;
-      err.message = 'Token inválido o expirado';
+      err.message = 'Token invalido o expirado';
     }
     next(err);
   }
