@@ -1,5 +1,6 @@
 const Raza = require('../models/Raza');
 const Especie = require('../models/Especie');
+const Animal = require('../models/Animal');
 
 const list = async (filters = {}) => {
   const query = { active: true };
@@ -46,6 +47,12 @@ const update = async (id, data) => {
 };
 
 const remove = async (id) => {
+  const dependencias = await Animal.exists({ raza: id, active: true });
+  if (dependencias) {
+    const err = new Error('No se puede desactivar la raza porque tiene animales activos asociados');
+    err.statusCode = 409;
+    throw err;
+  }
   const raza = await Raza.findByIdAndUpdate(id, { active: false }, { new: true });
   if (!raza) {
     const err = new Error('Raza no encontrada');
