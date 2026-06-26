@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Animal = require('../models/Animal');
 const Especie = require('../models/Especie');
 const Raza = require('../models/Raza');
+const Usuario = require('../models/Usuario');
 
 const createError = require('../utils/createError');
 
@@ -59,11 +60,8 @@ const assertValidDate = (value) => {
 
 const populateAnimalRelations = (query) => {
   return query
-    .populate('especie', 'nombre descripcion active')
-    .populate('raza', 'nombre descripcion active especie')
     .populate('padre', 'nombre sexo especie raza fechaNacimiento active')
-    .populate('madre', 'nombre sexo especie raza fechaNacimiento active')
-    .populate('propietario', 'nombre email rol active');
+    .populate('madre', 'nombre sexo especie raza fechaNacimiento active');
 };
 
 const getActiveAnimalOrThrow = async (id) => {
@@ -84,7 +82,8 @@ const assertCanManageAnimal = (animal, usuario) => {
     return;
   }
 
-  if (!usuario || toId(animal.propietario) !== toId(usuario._id)) {
+  const propietarioId = animal.propietario._id || animal.propietario;
+  if (!usuario || toId(propietarioId) !== toId(usuario._id)) {
     throw createError('No tienes permisos para realizar esta accion', 403);
   }
 };
@@ -140,7 +139,8 @@ const validateExistingParent = async ({ animal, speciesId, parentId, expectedSex
     throw createError(`El ${label} debe ser ${expectedSex}`);
   }
 
-  if (speciesId && toId(parent.especie) !== toId(speciesId)) {
+  const parentEspecieId = parent.especie._id || parent.especie;
+  if (speciesId && toId(parentEspecieId) !== toId(speciesId)) {
     throw createError(`El ${label} debe pertenecer a la misma especie`);
   }
 
@@ -192,9 +192,6 @@ const buildTreeNode = async (animalId, maxDepth, currentDepth = 0, visited = new
   visited.add(key);
 
   const animal = await Animal.findById(animalId)
-    .populate('especie', 'nombre descripcion active')
-    .populate('raza', 'nombre descripcion active especie')
-    .populate('propietario', 'nombre email rol active')
     .populate('padre', 'nombre sexo especie raza fechaNacimiento active')
     .populate('madre', 'nombre sexo especie raza fechaNacimiento active');
 
@@ -258,14 +255,14 @@ const list = async (query = {}) => {
     if (!isValidId(query.especie)) {
       throw createError('La especie no es valida');
     }
-    filters.especie = query.especie;
+    filters['especie._id'] = query.especie;
   }
 
   if (query.raza) {
     if (!isValidId(query.raza)) {
       throw createError('La raza no es valida');
     }
-    filters.raza = query.raza;
+    filters['raza._id'] = query.raza;
   }
 
   if (query.sexo) {
@@ -279,7 +276,7 @@ const list = async (query = {}) => {
     if (!isValidId(query.propietario)) {
       throw createError('El propietario no es valido');
     }
-    filters.propietario = query.propietario;
+    filters['propietario._id'] = query.propietario;
   }
 
   const page = Math.max(Number.parseInt(query.page, 10) || 1, 1);
@@ -311,13 +308,18 @@ const create = async (data, usuarioId) => {
   const fechaNacimiento = assertValidDate(data.fechaNacimiento);
   const { especie, raza } = await validateSpeciesAndBreed(data.especie, data.raza);
 
+  const propietario = await Usuario.findById(usuarioId);
+  if (!propietario) {
+    throw createError('Propietario no encontrado', 404);
+  }
+
   const payload = {
     nombre: String(data.nombre).trim(),
-    especie: especie._id,
-    raza: raza._id,
+    especie: { _id: especie._id, nombre: especie.nombre },
+    raza: { _id: raza._id, nombre: raza.nombre },
     sexo: data.sexo,
     fechaNacimiento,
-    propietario: usuarioId,
+    propietario: { _id: propietario._id, nombre: propietario.nombre, email: propietario.email },
   };
 
   if (data.peso !== undefined) {
@@ -355,6 +357,17 @@ const create = async (data, usuarioId) => {
   }
 
   const animal = await Animal.create(payload);
+
+  if (payload.padre) {
+    await Animal.findByIdAndUpdate(payload.padre, { $inc: { cantidadHijos: 1 } });
+  }
+  if (payload.madre) {
+    await Animal.findByIdAndUpdate(payload.madre, { $inc: { cantidadHijos: 1 } });
+  }
+
+  await Especie.findByIdAndUpdate(especie._id, { $inc: { cantidadAnimales: 1 } });
+  await Raza.findByIdAndUpdate(raza._id, { $inc: { cantidadAnimales: 1 } });
+
   return getById(animal._id);
 };
 
@@ -375,8 +388,10 @@ const update = async (id, data, usuario) => {
     throw createError('No se enviaron campos para actualizar');
   }
 
-  const nextSpeciesId = payload.especie || animal.especie;
-  const nextBreedId = payload.raza || animal.raza;
+  const oldEspecieId = animal.especie._id || animal.especie;
+  const oldRazaId = animal.raza._id || animal.raza;
+  const nextSpeciesId = payload.especie || oldEspecieId;
+  const nextBreedId = payload.raza || oldRazaId;
 
   if (payload.fechaNacimiento !== undefined) {
     payload.fechaNacimiento = assertValidDate(payload.fechaNacimiento);
@@ -389,7 +404,9 @@ const update = async (id, data, usuario) => {
     }
   }
 
+  const speciesChanged = payload.especie !== undefined && toId(payload.especie) !== toId(oldEspecieId);
   const needsFamilyValidation = payload.especie !== undefined || payload.raza !== undefined;
+
   if (needsFamilyValidation) {
     const hasParentsOrChildren = await Animal.exists({
       $or: [
@@ -400,18 +417,23 @@ const update = async (id, data, usuario) => {
       ],
     });
 
-    if (hasParentsOrChildren && toId(nextSpeciesId) !== toId(animal.especie)) {
+    if (hasParentsOrChildren && speciesChanged) {
       throw createError('No se puede cambiar la especie de un animal que ya tiene relaciones familiares');
     }
 
     const { especie, raza } = await validateSpeciesAndBreed(nextSpeciesId, nextBreedId);
-    payload.especie = especie._id;
-    payload.raza = raza._id;
+    payload.especie = { _id: especie._id, nombre: especie.nombre };
+    payload.raza = { _id: raza._id, nombre: raza.nombre };
   }
 
   const updated = await populateAnimalRelations(
     Animal.findByIdAndUpdate(id, payload, { new: true, runValidators: true })
   );
+
+  if (speciesChanged) {
+    await Especie.findByIdAndUpdate(oldEspecieId, { $inc: { cantidadAnimales: -1 } });
+    await Especie.findByIdAndUpdate(nextSpeciesId, { $inc: { cantidadAnimales: 1 } });
+  }
 
   return updated;
 };
@@ -424,9 +446,12 @@ const remove = async (id, usuario) => {
 
   assertCanManageAnimal(animal, usuario);
 
-  const removed = await populateAnimalRelations(
-    Animal.findByIdAndUpdate(id, { active: false }, { new: true })
-  );
+  const removed = await Animal.findByIdAndUpdate(id, { active: false }, { new: true });
+
+  const especieId = animal.especie._id || animal.especie;
+  const razaId = animal.raza._id || animal.raza;
+  await Especie.findByIdAndUpdate(especieId, { $inc: { cantidadAnimales: -1 } });
+  await Raza.findByIdAndUpdate(razaId, { $inc: { cantidadAnimales: -1 } });
 
   return removed;
 };
@@ -499,10 +524,12 @@ const assignParents = async (id, data, usuario) => {
 
   const payload = {};
 
+  const speciesId = animal.especie._id || animal.especie;
+
   if (hasPadre) {
     payload.padre = await validateExistingParent({
       animal,
-      speciesId: animal.especie,
+      speciesId,
       parentId: data.padre,
       expectedSex: 'macho',
       label: 'padre',
@@ -512,7 +539,7 @@ const assignParents = async (id, data, usuario) => {
   if (hasMadre) {
     payload.madre = await validateExistingParent({
       animal,
-      speciesId: animal.especie,
+      speciesId,
       parentId: data.madre,
       expectedSex: 'hembra',
       label: 'madre',

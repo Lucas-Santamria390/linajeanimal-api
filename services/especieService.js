@@ -28,11 +28,24 @@ const update = async (id, data) => {
   for (const field of ALLOWED_FIELDS) {
     if (data[field] !== undefined) payload[field] = data[field];
   }
-  return Especie.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
+  const especieActualizada = await Especie.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
+
+  if (payload.nombre) {
+    try {
+      await Animal.updateMany(
+        { 'especie._id': id },
+        { 'especie.nombre': payload.nombre }
+      );
+    } catch (syncError) {
+      console.error('Error sincronizando nombre de especie en Animal:', syncError);
+    }
+  }
+
+  return especieActualizada;
 };
 
 const remove = async (id) => {
-  const dependencias = await Animal.exists({ especie: id, active: true });
+  const dependencias = await Animal.exists({ 'especie._id': id, active: true });
   if (dependencias) {
     throw createError('No se puede desactivar la especie porque tiene animales activos asociados', 409);
   }
