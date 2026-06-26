@@ -15,13 +15,13 @@ describe('Tests de Animales CRUD + Genealogía (API v1 Animales)', () => {
   const usuarioAdminPrueba = {
     nombre: 'Saul Admin Animales',
     email: 'admin.animales@linaje.com',
-    password: 'password123'
+    password: 'Password123!'
   };
 
   const usuarioRegularPrueba = {
     nombre: 'Usuario Normal',
     email: 'normal@test.com',
-    password: 'password123'
+    password: 'Password123!'
   };
 
   let tokenAdmin = '';

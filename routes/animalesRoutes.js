@@ -130,13 +130,4 @@ router.post('/:id/padres',
   controller.assignParents
 );
 
-router.patch('/:id/padres',
-  auth,
-  param('id').isMongoId().withMessage('ID invalido'),
-  ...parentValidators,
-  atLeastOneParent,
-  validarCampos,
-  controller.assignParents
-);
-
 module.exports = router;
