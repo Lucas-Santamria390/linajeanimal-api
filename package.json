@@ -7,6 +7,7 @@
     "dev": "nodemon server.js",
     "start": "node server.js",
     "docker": "docker compose up --build",
+    "seed": "node seed.js",
     "pretest": "node -e \"require('mongodb-memory-server').MongoMemoryServer.create().then(m => m.stop())\"",
     "test": "jest --runInBand --detectOpenHandles"
   },

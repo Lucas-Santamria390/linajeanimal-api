@@ -250,7 +250,7 @@ async function construirArbol(animalId, profundidad = 3, actual = 0) {
 
 ---
 
-## Fase 8: Seed data y documentación (parcial)
+## Fase 8: Seed data y documentación (completa)
 
 > Dependencias: Fase 6 (todas las entidades creadas)  
 > Objetivo: Poblar la BD con datos de ejemplo y generar documentación de la API.
@@ -341,7 +341,7 @@ incluye el servicio `mongodb`, por lo que no se necesita MongoDB instalado en el
 ├── .gitignore                    # Fase 0 ✅
 ├── server.js                     # Fase 1 (solo listen()) ✅
 ├── app.js                        # Fase 1 (config Express) ✅
-├── seed.js                       # Fase 8 ❌ pendiente
+├── seed.js                       # Fase 8 ✅
 ├── postman_collection.json       # Fase 8 ❌ pendiente
 ├── README.md                     # Fase 8 ✅
 │
@@ -419,7 +419,7 @@ incluye el servicio `mongodb`, por lo que no se necesita MongoDB instalado en el
 | 10  | Rate limiting en auth routes                      | 4    | ✅ |
 | 11  | Helmet, CORS                                      | 1    | ✅ |
 | 12  | Sin password en respuestas                        | 2    | ✅ |
-| 13  | Seed data                                         | 8    | ❌ |
+| 13  | Seed data                                         | 8    | ✅ |
 | 14  | Postman collection o Swagger                      | 8    | ✅ (Swagger: auth, especies, razas, animales, usuarios) |
 | 15  | .env.example presente                             | 0    | ✅ |
 | 16  | Health check endpoint                             | 1    | ✅ |
