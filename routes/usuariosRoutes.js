@@ -30,7 +30,11 @@ router.post('/',
   authorize('admin'),
   body('nombre').trim().notEmpty().withMessage('El nombre es obligatorio').escape(),
   body('email').isEmail().withMessage('Email no válido').normalizeEmail(),
-  body('password').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres'),
+  body('password')
+    .isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres')
+    .matches(/[A-Z]/).withMessage('Debe contener una mayúscula')
+    .matches(/[0-9]/).withMessage('Debe contener un número')
+    .matches(/[^A-Za-z0-9]/).withMessage('Debe contener un carácter especial'),
   body('rol').optional().isIn(['admin', 'user']).withMessage('Rol no válido'),
   validarCampos,
   controller.create

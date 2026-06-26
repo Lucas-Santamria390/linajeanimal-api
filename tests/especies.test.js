@@ -16,7 +16,7 @@ describe('Tests de Especies CRUD (API v1 Especies)', () => {
   const usuarioAdminPrueba = {
     nombre: 'Saul Admin',
     email: 'admin.especies@linaje.com',
-    password: 'password123'
+    password: 'Password123!'
   };
 
   let token = '';

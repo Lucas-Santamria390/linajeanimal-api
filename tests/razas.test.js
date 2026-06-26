@@ -16,7 +16,7 @@ describe('Tests de Razas CRUD (API v1 Razas)', () => {
   const usuarioAdminPrueba = {
     nombre: 'Saul Admin Razas',
     email: 'admin.razas@linaje.com',
-    password: 'password123'
+    password: 'Password123!'
   };
 
   let token = '';

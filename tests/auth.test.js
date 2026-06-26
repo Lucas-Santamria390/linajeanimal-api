@@ -20,7 +20,7 @@ describe('Tests de Autenticación (API v1 Auth)', () => {
   const usuarioPrueba = {
     nombre: 'Saul Test',
     email: 'saul@test.com',
-    password: 'password123'
+    password: 'Password123!'
   };
 
   // --- 1. TEST DE REGISTRO ---
