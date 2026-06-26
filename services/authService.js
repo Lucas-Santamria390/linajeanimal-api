@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const createError = require('../utils/createError');
 const Usuario = require('../models/Usuario');
 const config = require('../config/env');
 
@@ -16,16 +17,12 @@ const register = async (data) => {
 const login = async (email, password) => {
   const usuario = await Usuario.findOne({ email, active: true }).select('+password');
   if (!usuario) {
-    const err = new Error('Email o contraseña incorrectos');
-    err.statusCode = 401;
-    throw err;
+    throw createError('Email o contraseña incorrectos', 401);
   }
 
   const isValid = await usuario.compararPassword(password);
   if (!isValid) {
-    const err = new Error('Email o contraseña incorrectos');
-    err.statusCode = 401;
-    throw err;
+    throw createError('Email o contraseña incorrectos', 401);
   }
 
   const token = generateToken(usuario._id, usuario.rol);
@@ -35,9 +32,7 @@ const login = async (email, password) => {
 const getProfile = async (id) => {
   const usuario = await Usuario.findById(id);
   if (!usuario || !usuario.active) {
-    const err = new Error('Usuario no encontrado');
-    err.statusCode = 404;
-    throw err;
+    throw createError('Usuario no encontrado', 404);
   }
   return usuario;
 };

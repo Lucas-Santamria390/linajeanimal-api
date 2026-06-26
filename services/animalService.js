@@ -3,14 +3,10 @@ const Animal = require('../models/Animal');
 const Especie = require('../models/Especie');
 const Raza = require('../models/Raza');
 
+const createError = require('../utils/createError');
+
 const DEFAULT_TREE_DEPTH = 3;
 const MAX_TREE_DEPTH = 5;
-
-const createError = (message, statusCode = 400) => {
-  const err = new Error(message);
-  err.statusCode = statusCode;
-  return err;
-};
 
 const toId = (value) => (value ? value.toString() : null);
 

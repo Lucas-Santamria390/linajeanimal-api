@@ -1,3 +1,4 @@
+const createError = require('../utils/createError');
 const Usuario = require('../models/Usuario');
 
 const list = async () => {
@@ -7,9 +8,7 @@ const list = async () => {
 const getById = async (id) => {
   const usuario = await Usuario.findById(id);
   if (!usuario) {
-    const err = new Error('Usuario no encontrado');
-    err.statusCode = 404;
-    throw err;
+    throw createError('Usuario no encontrado', 404);
   }
   return usuario;
 };
@@ -27,9 +26,7 @@ const create = async (data) => {
 const update = async (id, data) => {
   const usuario = await Usuario.findById(id);
   if (!usuario) {
-    const err = new Error('Usuario no encontrado');
-    err.statusCode = 404;
-    throw err;
+    throw createError('Usuario no encontrado', 404);
   }
 
   const updatable = {};
@@ -38,9 +35,7 @@ const update = async (id, data) => {
   if (data.rol !== undefined) updatable.rol = data.rol;
 
   if (!Object.keys(updatable).length) {
-    const err = new Error('No se enviaron campos para actualizar');
-    err.statusCode = 400;
-    throw err;
+    throw createError('No se enviaron campos para actualizar', 400);
   }
 
   return Usuario.findByIdAndUpdate(id, updatable, { new: true, runValidators: true });
@@ -48,16 +43,12 @@ const update = async (id, data) => {
 
 const deactivate = async (id, adminId) => {
   if (id === adminId.toString()) {
-    const err = new Error('No puedes desactivar tu propia cuenta');
-    err.statusCode = 400;
-    throw err;
+    throw createError('No puedes desactivar tu propia cuenta', 400);
   }
 
   const usuario = await Usuario.findByIdAndUpdate(id, { active: false }, { new: true, runValidators: true });
   if (!usuario) {
-    const err = new Error('Usuario no encontrado');
-    err.statusCode = 404;
-    throw err;
+    throw createError('Usuario no encontrado', 404);
   }
 
   return usuario;
@@ -65,9 +56,7 @@ const deactivate = async (id, adminId) => {
 
 const setActive = async (id, active, adminId) => {
   if (id === adminId.toString() && active === false) {
-    const err = new Error('No puedes desactivar tu propia cuenta');
-    err.statusCode = 400;
-    throw err;
+    throw createError('No puedes desactivar tu propia cuenta', 400);
   }
 
   const usuario = await Usuario.findByIdAndUpdate(
@@ -77,9 +66,7 @@ const setActive = async (id, active, adminId) => {
   );
 
   if (!usuario) {
-    const err = new Error('Usuario no encontrado');
-    err.statusCode = 404;
-    throw err;
+    throw createError('Usuario no encontrado', 404);
   }
 
   return usuario;
