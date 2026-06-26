@@ -35,15 +35,20 @@ const update = async (id, data) => {
     err.statusCode = 404;
     throw err;
   }
-  if (data.especie) {
-    const especie = await Especie.findById(data.especie);
+  const ALLOWED_FIELDS = ['nombre', 'descripcion', 'especie'];
+  const payload = {};
+  for (const field of ALLOWED_FIELDS) {
+    if (data[field] !== undefined) payload[field] = data[field];
+  }
+  if (payload.especie) {
+    const especie = await Especie.findById(payload.especie);
     if (!especie || !especie.active) {
       const err = new Error('Especie no encontrada');
       err.statusCode = 404;
       throw err;
     }
   }
-  return Raza.findByIdAndUpdate(id, data, { new: true, runValidators: true }).populate('especie', 'nombre');
+  return Raza.findByIdAndUpdate(id, payload, { new: true, runValidators: true }).populate('especie', 'nombre');
 };
 
 const remove = async (id) => {

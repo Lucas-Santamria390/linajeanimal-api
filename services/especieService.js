@@ -26,7 +26,12 @@ const update = async (id, data) => {
     err.statusCode = 404;
     throw err;
   }
-  return Especie.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+  const ALLOWED_FIELDS = ['nombre', 'descripcion'];
+  const payload = {};
+  for (const field of ALLOWED_FIELDS) {
+    if (data[field] !== undefined) payload[field] = data[field];
+  }
+  return Especie.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
 };
 
 const remove = async (id) => {
