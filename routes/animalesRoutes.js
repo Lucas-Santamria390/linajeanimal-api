@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { body, param } = require('express-validator');
+const { body, param, query } = require('express-validator');
 const mongoose = require('mongoose');
 const controller = require('../controllers/animalController');
 const auth = require('../middleware/auth');
@@ -61,6 +61,12 @@ const atLeastOneParent = (req, res, next) => {
 
 router.get('/',
   auth,
+  query('especie').optional().isMongoId().withMessage('Especie invalida'),
+  query('raza').optional().isMongoId().withMessage('Raza invalida'),
+  query('propietario').optional().isMongoId().withMessage('Propietario invalido'),
+  query('sexo').optional().isIn(['macho', 'hembra']).withMessage('Sexo invalido'),
+  query('active').optional().isBoolean().withMessage('Active debe ser booleano'),
+  validarCampos,
   controller.list
 );
 

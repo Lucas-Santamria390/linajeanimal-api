@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { body, param } = require('express-validator');
+const { body, param, query } = require('express-validator');
 const controller = require('../controllers/usuarioController');
 const auth = require('../middleware/auth');
 const authorize = require('../middleware/role');
@@ -10,6 +10,10 @@ const router = Router();
 router.get('/',
   auth,
   authorize('admin'),
+  query('active').optional().isBoolean().withMessage('Active debe ser booleano'),
+  query('page').optional().isInt({ min: 1 }).withMessage('Page debe ser un entero positivo').toInt(),
+  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit debe ser entre 1 y 100').toInt(),
+  validarCampos,
   controller.list
 );
 

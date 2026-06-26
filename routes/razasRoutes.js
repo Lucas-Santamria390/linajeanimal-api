@@ -8,7 +8,8 @@ const validarCampos = require('../middleware/validarCampos');
 const router = Router();
 
 router.get('/',
-  query('especie').optional().isMongoId().withMessage('ID de especie inválido'),
+  query('especie').optional().isMongoId().withMessage('ID de especie invalido'),
+  query('active').optional().isBoolean().withMessage('Active debe ser booleano'),
   validarCampos,
   controller.list
 );
