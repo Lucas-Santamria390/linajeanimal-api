@@ -24,6 +24,19 @@ router.post('/login',
   controller.login
 );
 
+router.put('/password',
+  auth,
+  body('currentPassword').notEmpty().withMessage('La contraseña actual es obligatoria'),
+  body('newPassword').isLength({ min: 8 }).withMessage('La nueva contraseña debe tener al menos 8 caracteres'),
+  validarCampos,
+  controller.changePassword
+);
+
+router.post('/logout',
+  auth,
+  controller.logout
+);
+
 router.get('/profile',
   auth,
   controller.profile
