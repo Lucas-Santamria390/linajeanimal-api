@@ -438,7 +438,7 @@ const update = async (id, data, usuario) => {
   return updated;
 };
 
-const remove = async (id, usuario) => {
+const deactivate = async (id, usuario) => {
   const animal = await Animal.findByIdAndUpdate(id, { active: false });
   if (!animal || !animal.active) {
     throw createError('Animal no encontrado', 404);
@@ -560,7 +560,7 @@ module.exports = {
   create,
   getById,
   update,
-  remove,
+  deactivate,
   getTree,
   getChildren,
   getSiblings,
