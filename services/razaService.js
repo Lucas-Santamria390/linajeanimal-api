@@ -57,7 +57,7 @@ const update = async (id, data) => {
   return razaActualizada;
 };
 
-const remove = async (id) => {
+const deactivate = async (id) => {
   const dependencias = await Animal.exists({ 'raza._id': id, active: true });
   if (dependencias) {
     throw createError('No se puede desactivar la raza porque tiene animales activos asociados', 409);
@@ -69,4 +69,4 @@ const remove = async (id) => {
   return raza;
 };
 
-module.exports = { list, create, getById, update, remove };
+module.exports = { list, create, getById, update, deactivate };
