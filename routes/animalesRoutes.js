@@ -108,28 +108,28 @@ router.delete('/:id',
   controller.remove
 );
 
-router.get('/:id/arbol-genealogico',
+router.get('/:id/family-tree',
   auth,
   param('id').isMongoId().withMessage('ID invalido'),
   validarCampos,
   controller.tree
 );
 
-router.get('/:id/hijos',
+router.get('/:id/children',
   auth,
   param('id').isMongoId().withMessage('ID invalido'),
   validarCampos,
   controller.children
 );
 
-router.get('/:id/hermanos',
+router.get('/:id/siblings',
   auth,
   param('id').isMongoId().withMessage('ID invalido'),
   validarCampos,
   controller.siblings
 );
 
-router.post('/:id/padres',
+router.post('/:id/parents',
   auth,
   param('id').isMongoId().withMessage('ID invalido'),
   ...parentValidators,
