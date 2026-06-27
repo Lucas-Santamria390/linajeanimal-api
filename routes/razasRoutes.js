@@ -48,7 +48,7 @@ router.delete('/:id',
   authorize('admin'),
   param('id').isMongoId().withMessage('ID inválido'),
   validarCampos,
-  controller.remove
+  controller.deactivate
 );
 
 module.exports = router;
