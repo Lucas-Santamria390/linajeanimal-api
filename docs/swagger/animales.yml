@@ -371,7 +371,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /api/v1/animales/{id}/arbol-genealogico:
+  /api/v1/animales/{id}/family-tree:
     get:
       tags: [Animales]
       summary: Obtener el arbol genealogico de un animal
@@ -433,7 +433,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /api/v1/animales/{id}/hijos:
+  /api/v1/animales/{id}/children:
     get:
       tags: [Animales]
       summary: Listar hijos directos de un animal
@@ -485,7 +485,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /api/v1/animales/{id}/hermanos:
+  /api/v1/animales/{id}/siblings:
     get:
       tags: [Animales]
       summary: Listar hermanos de un animal
@@ -537,7 +537,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /api/v1/animales/{id}/padres:
+  /api/v1/animales/{id}/parents:
     post:
       tags: [Animales]
       summary: Asignar padres a un animal
@@ -608,77 +608,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-    patch:
-      tags: [Animales]
-      summary: Asignar o desasignar padres (alias de POST)
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-          description: ID del animal
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                padre:
-                  type: string
-                  nullable: true
-                  description: ID del padre (null para desasignar)
-                madre:
-                  type: string
-                  nullable: true
-                  description: ID de la madre (null para desasignar)
-      responses:
-        200:
-          description: Padres actualizados
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    type: object
-        400:
-          description: Datos invalidos (validacion)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        401:
-          description: No autenticado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        403:
-          description: Sin permisos (no eres el propietario ni admin)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        404:
-          description: Animal no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        500:
-          description: Error interno del servidor
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
 components:
   schemas:
     Error:
