@@ -1,5 +1,6 @@
 const createError = require('../utils/createError');
 const Usuario = require('../models/Usuario');
+const { logSecurityEvent, EventTypes } = require('../middleware/securityLogger');
 
 const list = async (query = {}) => {
   const filters = {};
@@ -58,6 +59,10 @@ const update = async (id, data) => {
 
 const deactivate = async (id, adminId) => {
   if (id === adminId.toString()) {
+    logSecurityEvent(EventTypes.SELF_DEACTIVATE_BLOCKED, {
+      adminId,
+      message: `Admin ${adminId} intento desactivar su propia cuenta`,
+    });
     throw createError('No puedes desactivar tu propia cuenta', 400);
   }
 
@@ -66,11 +71,22 @@ const deactivate = async (id, adminId) => {
     throw createError('Usuario no encontrado', 404);
   }
 
+  logSecurityEvent(EventTypes.USER_DEACTIVATED, {
+    userId: id,
+    userEmail: usuario.email,
+    adminId,
+    message: `Usuario ${usuario.email} desactivado por admin ${adminId}`,
+  });
+
   return usuario;
 };
 
 const setActive = async (id, active, adminId) => {
   if (id === adminId.toString() && active === false) {
+    logSecurityEvent(EventTypes.SELF_DEACTIVATE_BLOCKED, {
+      adminId,
+      message: `Admin ${adminId} intento desactivar su propia cuenta via PATCH`,
+    });
     throw createError('No puedes desactivar tu propia cuenta', 400);
   }
 
@@ -82,6 +98,22 @@ const setActive = async (id, active, adminId) => {
 
   if (!usuario) {
     throw createError('Usuario no encontrado', 404);
+  }
+
+  if (active) {
+    logSecurityEvent(EventTypes.USER_ACTIVATED, {
+      userId: id,
+      userEmail: usuario.email,
+      adminId,
+      message: `Usuario ${usuario.email} reactivado por admin ${adminId}`,
+    });
+  } else {
+    logSecurityEvent(EventTypes.USER_DEACTIVATED, {
+      userId: id,
+      userEmail: usuario.email,
+      adminId,
+      message: `Usuario ${usuario.email} desactivado por admin ${adminId} via PATCH`,
+    });
   }
 
   return usuario;

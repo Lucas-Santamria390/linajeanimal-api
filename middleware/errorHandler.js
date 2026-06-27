@@ -1,3 +1,6 @@
+const config = require('../config/env');
+const { logSecurityEvent, EventTypes, extractReqMeta } = require('./securityLogger');
+
 const errorHandler = (err, req, res, next) => {
   let statusCode = err.statusCode || 500;
   let message = err.message || 'Error interno del servidor';
@@ -12,10 +15,22 @@ const errorHandler = (err, req, res, next) => {
     message = 'El recurso ya existe (duplicado)';
   }
 
+  if (statusCode >= 500) {
+    logSecurityEvent(EventTypes.ERROR, {
+      ...extractReqMeta(req),
+      userId: req.usuario?._id,
+      userEmail: req.usuario?.email,
+      statusCode,
+      message,
+      errorName: err.name,
+      ...(config.nodeEnv === 'development' && { stack: err.stack }),
+    });
+  }
+
   res.status(statusCode).json({
     success: false,
     message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    ...(config.nodeEnv === 'development' && { stack: err.stack }),
   });
 };
 
