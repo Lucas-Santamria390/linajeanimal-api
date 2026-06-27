@@ -219,7 +219,7 @@ describe('Tests de Animales CRUD + Genealogía (API v1 Animales)', () => {
   describe('Funcionalidades de Genealogía', () => {
     it('Debería obtener los hermanos de un animal (200)', async () => {
       const res = await request(app)
-        .get(`/api/v1/animales/${idAnimalPrincipal}/hermanos`)
+        .get(`/api/v1/animales/${idAnimalPrincipal}/siblings`)
         .set('Authorization', `Bearer ${tokenAdmin}`);
       expect(res.statusCode).toEqual(200);
       expect(res.body).toHaveProperty('success', true);
@@ -229,7 +229,7 @@ describe('Tests de Animales CRUD + Genealogía (API v1 Animales)', () => {
 
     it('Debería obtener los hijos de un animal (200)', async () => {
       const res = await request(app)
-        .get(`/api/v1/animales/${idPadre}/hijos`)
+        .get(`/api/v1/animales/${idPadre}/children`)
         .set('Authorization', `Bearer ${tokenAdmin}`);
       expect(res.statusCode).toEqual(200);
       expect(res.body).toHaveProperty('success', true);
@@ -239,7 +239,7 @@ describe('Tests de Animales CRUD + Genealogía (API v1 Animales)', () => {
 
     it('Debería obtener el árbol genealógico de un animal (200)', async () => {
       const res = await request(app)
-        .get(`/api/v1/animales/${idAnimalPrincipal}/arbol-genealogico`)
+        .get(`/api/v1/animales/${idAnimalPrincipal}/family-tree`)
         .set('Authorization', `Bearer ${tokenAdmin}`);
       expect(res.statusCode).toEqual(200);
       expect(res.body).toHaveProperty('success', true);
@@ -249,7 +249,7 @@ describe('Tests de Animales CRUD + Genealogía (API v1 Animales)', () => {
 
     it('Debería asignar un nuevo padre a un animal (200)', async () => {
       const res = await request(app)
-        .post(`/api/v1/animales/${idAnimalPrincipal}/padres`)
+        .post(`/api/v1/animales/${idAnimalPrincipal}/parents`)
         .set('Authorization', `Bearer ${tokenAdmin}`)
         .send({ padre: idNuevoPadre.toString() });
       expect(res.statusCode).toEqual(200);
