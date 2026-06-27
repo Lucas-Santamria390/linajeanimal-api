@@ -439,21 +439,19 @@ const update = async (id, data, usuario) => {
 };
 
 const remove = async (id, usuario) => {
-  const animal = await Animal.findById(id);
+  const animal = await Animal.findByIdAndUpdate(id, { active: false });
   if (!animal || !animal.active) {
     throw createError('Animal no encontrado', 404);
   }
 
   assertCanManageAnimal(animal, usuario);
 
-  const removed = await Animal.findByIdAndUpdate(id, { active: false }, { new: true });
-
   const especieId = animal.especie._id || animal.especie;
   const razaId = animal.raza._id || animal.raza;
   await Especie.findByIdAndUpdate(especieId, { $inc: { cantidadAnimales: -1 } });
   await Raza.findByIdAndUpdate(razaId, { $inc: { cantidadAnimales: -1 } });
 
-  return removed;
+  return { ...animal.toObject(), active: false };
 };
 
 const getTree = async (id, generations = DEFAULT_TREE_DEPTH) => {
