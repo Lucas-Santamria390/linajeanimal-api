@@ -157,7 +157,7 @@ describe('Tests de Razas CRUD (API v1 Razas)', () => {
       const verificarRes = await request(app).get(`/api/v1/razas/${razaId}`);
       
       if (verificarRes.statusCode === 200) {
-        expect(verificarRes.body.data).toHaveProperty('deleted', true);
+       expect(verificarRes.body.data).toHaveProperty('active', false);
       } else {
         expect(verificarRes.statusCode).toEqual(404);
       }
