@@ -8,4 +8,11 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-module.exports = { authLimiter };
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000, 
+  max: 100, 
+  message: { success: false, message: 'Demasiadas solicitudes, intente de nuevo en un minuto' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+module.exports = { authLimiter, generalLimiter };
