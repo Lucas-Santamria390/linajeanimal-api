@@ -20,7 +20,11 @@ const createValidators = [
   body('especie').isMongoId().withMessage('La especie debe ser un ID valido'),
   body('raza').isMongoId().withMessage('La raza debe ser un ID valido'),
   body('sexo').isIn(['macho', 'hembra']).withMessage('El sexo debe ser macho o hembra'),
-  body('fechaNacimiento').isISO8601().withMessage('La fecha de nacimiento no es valida').toDate(),
+  body('fechaNacimiento').isISO8601().withMessage('La fecha de nacimiento no es valida').toDate()
+    .custom((value) => {
+      if (value > new Date()) throw new Error('La fecha de nacimiento no puede ser futura');
+      return true;
+    }),
   body('peso').optional({ nullable: true }).isFloat({ min: 0 }).withMessage('El peso debe ser un numero valido y positivo').toFloat(),
   body('color').optional({ nullable: true }).trim().escape(),
   body('identificador').optional({ nullable: true }).trim().escape(),
@@ -35,7 +39,11 @@ const updateValidators = [
   body('especie').optional({ nullable: true }).isMongoId().withMessage('La especie debe ser un ID valido'),
   body('raza').optional({ nullable: true }).isMongoId().withMessage('La raza debe ser un ID valido'),
   body('sexo').optional({ nullable: true }).isIn(['macho', 'hembra']).withMessage('El sexo debe ser macho o hembra'),
-  body('fechaNacimiento').optional({ nullable: true }).isISO8601().withMessage('La fecha de nacimiento no es valida').toDate(),
+  body('fechaNacimiento').optional({ nullable: true }).isISO8601().withMessage('La fecha de nacimiento no es valida').toDate()
+    .custom((value) => {
+      if (value > new Date()) throw new Error('La fecha de nacimiento no puede ser futura');
+      return true;
+    }),
   body('peso').optional({ nullable: true }).isFloat({ min: 0 }).withMessage('El peso debe ser un numero valido y positivo').toFloat(),
   body('color').optional({ nullable: true }).trim().escape(),
   body('identificador').optional({ nullable: true }).trim().escape(),
