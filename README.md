@@ -25,7 +25,7 @@ API REST para la gestión de árboles genealógicos de animales. Permite registr
 
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/Lucas-Santamaria390/linajeanimal-api.git
+git clone [https://github.com/Lucas-Santamaria390/linajeanimal-api.git](https://github.com/Lucas-Santamaria390/linajeanimal-api.git)
 cd linajeanimal-api
 
 # 2. Configurar variables de entorno
@@ -34,6 +34,7 @@ cp .env.example .env
 
 # 3. Levantar todo (API + MongoDB)
 npm run docker
+
 ```
 
 La API estará disponible en `http://localhost:3000`.
@@ -42,7 +43,7 @@ La API estará disponible en `http://localhost:3000`.
 
 ```bash
 # 1. Clonar e instalar dependencias
-git clone https://github.com/Lucas-Santamaria390/linajeanimal-api.git
+git clone [https://github.com/Lucas-Santamaria390/linajeanimal-api.git](https://github.com/Lucas-Santamaria390/linajeanimal-api.git)
 cd linajeanimal-api
 npm install
 
@@ -52,12 +53,13 @@ cp .env.example .env
 
 # 3. Iniciar en modo desarrollo
 npm run dev
+
 ```
 
 ## Variables de entorno
 
 | Variable | Descripción | Valor por defecto |
-|----------|-------------|-------------------|
+| --- | --- | --- |
 | `PORT` | Puerto del servidor | `3000` |
 | `NODE_ENV` | Entorno (development/production) | `development` |
 | `MONGODB_URI` | Cadena de conexión a MongoDB | `mongodb://localhost:27017/linajeanimal` |
@@ -72,15 +74,17 @@ npm run dev
 ### Autenticación
 
 | Método | Ruta | Auth | Rol | Descripción |
-|--------|------|------|-----|-------------|
+| --- | --- | --- | --- | --- |
 | POST | `/api/v1/auth/register` | No | — | Registrar usuario |
 | POST | `/api/v1/auth/login` | No | — | Iniciar sesión |
 | GET | `/api/v1/auth/profile` | Sí | — | Perfil del usuario autenticado |
+| PUT | `/api/v1/auth/password` | Sí | — | Actualizar contraseña del usuario |
+| POST | `/api/v1/auth/logout` | Sí | — | Invalidar sesión actual de usuario |
 
 ### Especies
 
 | Método | Ruta | Auth | Rol | Descripción |
-|--------|------|------|-----|-------------|
+| --- | --- | --- | --- | --- |
 | GET | `/api/v1/especies` | No | — | Listar especies |
 | GET | `/api/v1/especies/:id` | No | — | Detalle de especie |
 | POST | `/api/v1/especies` | Sí | admin | Crear especie |
@@ -90,7 +94,7 @@ npm run dev
 ### Razas
 
 | Método | Ruta | Auth | Rol | Descripción |
-|--------|------|------|-----|-------------|
+| --- | --- | --- | --- | --- |
 | GET | `/api/v1/razas` | No | — | Listar razas (filtro `?especie=id`) |
 | GET | `/api/v1/razas/:id` | No | — | Detalle de raza |
 | POST | `/api/v1/razas` | Sí | admin | Crear raza |
@@ -100,44 +104,45 @@ npm run dev
 ### Animales
 
 | Método | Ruta | Auth | Rol | Descripción |
-|--------|------|------|-----|-------------|
-| POST | `/api/v1/animales` | Sí | — | Crear animal |
-| GET | `/api/v1/animales` | Sí | — | Listar animales |
-| GET | `/api/v1/animales/:id` | Sí | — | Detalle de animal |
-| PUT | `/api/v1/animales/:id` | Sí | — | Actualizar animal |
-| DELETE | `/api/v1/animales/:id` | Sí | — | Desactivar animal |
-| POST | `/api/v1/animales/:id/padres` | Sí | — | Asignar o desasignar padres |
-| PATCH | `/api/v1/animales/:id/padres` | Sí | — | Asignar o desasignar padres (alias) |
-| GET | `/api/v1/animales/:id/arbol-genealogico` | Sí | — | Árbol genealógico |
-| GET | `/api/v1/animales/:id/hijos` | Sí | — | Hijos directos |
-| GET | `/api/v1/animales/:id/hermanos` | Sí | — | Hermanos |
+| --- | --- | --- | --- | --- |
+| POST | `/api/v1/animals` | Sí | — | Crear animal |
+| GET | `/api/v1/animals` | Sí | — | Listar animales activos con paginación |
+| GET | `/api/v1/animals/:id` | Sí | — | Detalle de animal completo |
+| PUT | `/api/v1/animals/:id` | Sí | — | Actualizar animal |
+| DELETE | `/api/v1/animals/:id` | Sí | admin | Desactivar animal (soft delete) |
+| POST | `/api/v1/animals/:id/padres` | Sí | — | Asignar o desasignar padres |
+| PATCH | `/api/v1/animals/:id/padres` | Sí | — | Asignar o desasignar padres (alias) |
+| GET | `/api/v1/animals/:id/arbol-genealogico` | Sí | — | Árbol genealógico estructurado |
+| GET | `/api/v1/animals/:id/hijos` | Sí | — | Listar hijos directos |
+| GET | `/api/v1/animals/:id/hermanos` | Sí | — | Listar hermanos directos |
 
 ### Usuarios
 
 | Método | Ruta | Auth | Rol | Descripción |
-|--------|------|------|-----|-------------|
-| GET | `/api/v1/usuarios` | Sí | admin | Listar todos los usuarios |
+| --- | --- | --- | --- | --- |
+| GET | `/api/v1/usuarios` | Sí | admin | Listar usuarios, devuelve `{ data, pagination }` |
 | DELETE | `/api/v1/usuarios/:id` | Sí | admin | Desactivar usuario (soft delete) |
 
 ### Utilidades
 
 | Método | Ruta | Descripción |
-|--------|------|-------------|
+| --- | --- | --- |
 | GET | `/api/v1/health` | Health check |
-| GET | `/api/v1/docs` | Documentación Swagger |
+| GET | `/api/v1/docs` | Documentación Swagger (Restringido en producción) |
 
 ## Documentación interactiva
 
-La API cuenta con documentación Swagger disponible en:
+La API cuenta con documentación Swagger disponible en entornos de desarrollo y testing en:
 
 ```
 http://localhost:3000/api/v1/docs
+
 ```
 
 ## Comandos disponibles
 
 | Comando | Descripción |
-|---------|-------------|
+| --- | --- |
 | `npm run docker` | Levantar API + MongoDB con Docker Compose |
 | `npm run dev` | Iniciar en modo desarrollo con nodemon |
 | `npm start` | Iniciar en modo producción |
@@ -148,7 +153,7 @@ http://localhost:3000/api/v1/docs
 ```
 /
 ├── config/          # Conexión a BD, variables de entorno, Swagger
-├── controllers/     | Controladores (delegan en services/)
+├── controllers/     # Controladores (delegan en services/)
 ├── middleware/      # Auth JWT, roles, validación, rate limiting, errores
 ├── models/          # Esquemas de Mongoose (Usuario, Especie, Raza, Animal)
 ├── routes/          # Rutas de Express con validaciones
@@ -159,23 +164,27 @@ http://localhost:3000/api/v1/docs
 ├── Dockerfile       # Imagen multi-stage
 ├── docker-compose.yml  # Servicios API + MongoDB
 └── seed.js          # Script de seed con datos de prueba
+
 ```
 
 ## Seed de prueba
 
-El script `npm run seed` limpia las colecciones principales y crea datos de ejemplo
-para:
+El script `npm run seed` limpia las colecciones principales y crea datos de ejemplo para:
 
-- 2 usuarios de prueba: `admin` y `user`
-- 3 especies: `Perro`, `Gato` y `Caballo`
-- 6 razas vinculadas a sus especies
-- 10+ animales, incluyendo una linea genealogica de 3 generaciones
+* 2 usuarios de prueba: `admin` y `user`
+* 3 especies: `Perro`, `Gato` y `Caballo`
+* 6 razas vinculadas a sus especies
+* 10+ animales, incluyendo una linea genealogica de 3 generaciones
 
 Credenciales creadas por el seed:
 
-- `admin@linajeanimal.test` / `Admin123!`
-- `usuario@linajeanimal.test` / `User123!`
+* `admin@linajeanimal.test` / `Admin123!`
+* `usuario@linajeanimal.test` / `User123!`
 
 ## Licencia
 
 MIT
+
+```
+
+```

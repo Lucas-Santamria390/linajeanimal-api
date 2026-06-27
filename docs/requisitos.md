@@ -1,6 +1,6 @@
 # Requisitos del Sistema — LinajeAnimal
 
-> **Versión:** 1.0  
+> **Versión:** 1.2  
 > **Proyecto:** LinajeAnimal — API REST para gestión de árbol genealógico de animales  
 > **Fecha:** Junio 2026
 
@@ -21,68 +21,68 @@ que necesite mantener un registro estructurado de animales con trazabilidad gene
 
 ### 2.1 Gestión de Especies
 
-| ID     | Descripción                                                                 | Prioridad |
-|--------|-----------------------------------------------------------------------------|-----------|
-| RF-01  | Crear una especie con nombre, descripción y estado (booleano `active: true/false`) | Alta      |
-| RF-02  | Listar todas las especies (con filtro por activas)                          | Alta      |
-| RF-03  | Obtener detalle de una especie por ID                                       | Alta      |
-| RF-04  | Actualizar datos de una especie                                             | Alta      |
-| RF-05  | Eliminación lógica (soft delete) de una especie (desactivar)                | Alta      |
+| ID    | Descripción                                                                 | Prioridad |
+|-------|-----------------------------------------------------------------------------|-----------|
+| RF-01 | Crear una especie con nombre, descripción y estado (booleano `active: true/false`) | Alta      |
+| RF-02 | Listar todas las especies (con filtro por activas)                          | Alta      |
+| RF-03 | Obtener detalle de una especie por ID                                       | Alta      |
+| RF-04 | Actualizar datos de una especie                                             | Alta      |
+| RF-05 | Eliminación lógica (soft delete) de una especie (desactivar)                | Alta      |
 
 ### 2.2 Gestión de Razas
 
-| ID     | Descripción                                                                 | Prioridad |
-|--------|-----------------------------------------------------------------------------|-----------|
-| RF-06  | Crear una raza asociada a una especie, con nombre, descripción y estándar   | Alta      |
-| RF-07  | Listar razas (con filtro por especie y por estado activo)                   | Alta      |
-| RF-08  | Obtener detalle de una raza por ID                                          | Alta      |
-| RF-09  | Actualizar datos de una raza                                                | Alta      |
-| RF-10  | Eliminación lógica (soft delete) de una raza                                | Alta      |
+| ID    | Descripción                                                                 | Prioridad |
+|-------|-----------------------------------------------------------------------------|-----------|
+| RF-06 | Crear una raza asociada a una especie, con nombre, descripción y estándar   | Alta      |
+| RF-07 | Listar razas (con filtro por especie y por estado activo)                   | Alta      |
+| RF-08 | Obtener detalle de una raza por ID                                          | Alta      |
+| RF-09 | Actualizar datos de una raza                                                | Alta      |
+| RF-10 | Eliminación lógica (soft delete) de una raza                                | Alta      |
 
 ### 2.3 Gestión de Animales (Corazón del dominio)
 
-| ID     | Descripción                                                                 | Prioridad |
-|--------|-----------------------------------------------------------------------------|-----------|
-| RF-11  | Registrar un nuevo animal con: nombre, especie, raza, sexo, fecha de nacimiento, peso, color, identificador único (microchip/tatuaje/número de registro), foto URL, notas | Alta      |
-| RF-12  | Asignar padre y/o madre a un animal (relaciones de parentesco)              | Alta      |
-| RF-13  | Listar animales con filtros por especie, raza, sexo, propietario, activos   | Alta      |
-| RF-14  | Obtener detalle completo de un animal (incluyendo padres e hijos)           | Alta      |
-| RF-15  | Actualizar datos de un animal                                               | Alta      |
-| RF-16  | Eliminación lógica (soft delete) de un animal                               | Alta      |
-| RF-17  | Consultar el árbol genealógico de un animal (ancestros hasta 3-5 generaciones) | Alta   |
-| RF-18  | Consultar los hijos directos de un animal                                   | Alta      |
-| RF-19  | Consultar hermanos de un animal (mismos padres)                             | Media     |
+| ID    | Descripción                                                                 | Prioridad |
+|-------|-----------------------------------------------------------------------------|-----------|
+| RF-11 | Registrar un nuevo animal con: nombre, especie, raza, sexo, fecha de nacimiento, peso, color, identificador único (microchip/tatuaje/número de registro), foto URL, notas | Alta      |
+| RF-12 | Asignar padre y/o madre a un animal (relaciones de parentesco)              | Alta      |
+| RF-13 | Listar animales con filtros por especie, raza, sexo, propietario, activos   | Alta      |
+| RF-14 | Obtener detalle completo de un animal (incluyendo padres e hijos)           | Alta      |
+| RF-15 | Actualizar datos de un animal                                               | Alta      |
+| RF-16 | Eliminación lógica (soft delete) de un animal                               | Alta      |
+| RF-17 | Consultar el árbol genealógico de un animal (ancestros hasta 3-5 generaciones) | Alta   |
+| RF-18 | Consultar los hijos directos de un animal                                   | Alta      |
+| RF-19 | Consultar hermanos de un animal (mismos padres)                             | Media     |
 
 ### 2.4 Gestión de Usuarios y Autenticación
 
-| ID     | Descripción                                                                 | Prioridad |
-|--------|-----------------------------------------------------------------------------|-----------|
-| RF-20  | Registro de usuario con email, contraseña, nombre, rol (user/admin)         | Alta      |
-| RF-21  | Inicio de sesión (login) que devuelve token JWT                             | Alta      |
-| RF-22  | Obtener perfil del usuario autenticado                                      | Alta      |
-| RF-23  | Los usuarios pueden administrar solo los animales que ellos registraron (user) | Alta   |
-| RF-24  | Los administradores pueden gestionar cualquier animal, especie, raza y usuario | Alta   |
-| RF-25  | Listar usuarios (solo admin)                                                | Media     |
-| RF-26  | Desactivar/activar usuarios (solo admin)                                    | Media     |
+| ID    | Descripción                                                                 | Prioridad |
+|-------|-----------------------------------------------------------------------------|-----------|
+| RF-20 | Registro de usuario con email, contraseña, nombre, rol (user/admin)         | Alta      |
+| RF-21 | Inicio de sesión (login) que devuelve token JWT                             | Alta      |
+| RF-22 | Obtener perfil del usuario autenticado                                      | Alta      |
+| RF-23 | Los usuarios pueden administrar solo los animales que ellos registraron (user) | Alta   |
+| RF-24 | Los administradores pueden gestionar cualquier animal, especie, raza y usuario | Alta      |
+| RF-25 | Listar usuarios (solo admin)                                                | Media     |
+| RF-26 | Desactivar/activar usuarios (solo admin)                                    | Media     |
 
 ### 2.5 Seguridad
 
-| ID     | Descripción                                                                 | Prioridad |
-|--------|-----------------------------------------------------------------------------|-----------|
-| RF-27  | Rate limiting en rutas de autenticación (máx. 10 intentos por cada 15 minutos) | Alta      |
-| RF-28  | Protección de headers con Helmet                                            | Alta      |
-| RF-29  | CORS configurado (permitir orígenes específicos)                            | Alta      |
-| RF-30  | Contraseñas hasheadas con bcrypt (salt ≥ 10)                                | Alta      |
-| RF-31  | Validación de datos de entrada en todas las rutas                           | Alta      |
+| ID    | Descripción                                                                 | Prioridad |
+|-------|-----------------------------------------------------------------------------|-----------|
+| RF-27 | Rate limiting en rutas de autenticación (máx. 10 intentos por cada 15 minutos) | Alta      |
+| RF-28 | Protección de headers con Helmet                                            | Alta      |
+| RF-29 | CORS configurado (permitir orígenes específicos)                            | Alta      |
+| RF-30 | Contraseñas hasheadas con bcrypt (salt ≥ 10, longitud mínima de 8 caracteres) | Alta    |
+| RF-31 | Validación de datos de entrada en todas las rutas                           | Alta      |
 
 ### 2.6 Utilidades
 
-| ID     | Descripción                                                                 | Prioridad |
-|--------|-----------------------------------------------------------------------------|-----------|
-| RF-32  | Endpoint de health check (`GET /api/v1/health`)                              | Alta      |
-| RF-33  | Seed data para desarrollo (usuarios, especies, razas, animales)             | Media (pendiente) |
-| RF-34  | Documentación de la API con Swagger (ruta `/api/v1/docs`)                    | Alta      |
-| RF-35  | Sanitizar entrada para prevenir inyección NoSQL usando express-validator o mongo-sanitize | Alta      |
+| ID    | Descripción                                                                 | Prioridad |
+|-------|-----------------------------------------------------------------------------|-----------|
+| RF-32 | Endpoint de health check (`GET /api/v1/health`)                             | Alta      |
+| RF-33 | Seed data para desarrollo (usuarios, especies, razas, animales)             | Media (pendiente) |
+| RF-34 | Documentación de la API con Swagger (ruta `/api/v1/docs`)                    | Alta      |
+| RF-35 | Sanitizar entrada para prevenir inyección NoSQL usando express-validator o mongo-sanitize | Alta      |
 
 ---
 
@@ -107,14 +107,14 @@ que necesite mantener un registro estructurado de animales con trazabilidad gene
 
 ## 4. Roles de Usuario
 
-| Rol     | Permisos                                                                 |
-|---------|--------------------------------------------------------------------------|
+| Rol     | Permisos                                                                  |
+|---------|---------------------------------------------------------------------------|
 | **admin** | CRUD completo en todas las entidades (Especie, Raza, Animal, Usuario). Gestión de usuarios (listar, desactivar). |
 | **user** | Registro y gestión de sus propios animales. Consulta de especies, razas y animales públicos. No puede modificar animales de otros usuarios. |
 
 ---
 
-## 5. Restricciones Técnicas
+## 5. Restricciones Técnicas y de Arquitectura
 
 ### 5.1 Stack principal (obligatorio)
 
@@ -130,7 +130,13 @@ que necesite mantener un registro estructurado de animales con trazabilidad gene
 - **Gestor de paquetes:** npm
 - **Entorno:** Node.js ≥ 18
 
-### 5.2 Containerización con Docker (modo recomendado)
+### 5.2 Estrategia de Modelado de Datos (Extended Reference)
+
+Para optimizar las consultas frecuentes del árbol genealógico y reducir el uso excesivo de `.populate()` en lecturas masivas, el diseño de la base de datos implementa **Extended Reference (Referencias Extendidas / Objetos Embebidos Parciales)**:
+
+> **Regla de Diseño:** En lugar de almacenar únicamente el `ObjectId` para las relaciones parentales (Padre/Madre) o de clasificación (Especie/Raza), se embebe un objeto parcial con los datos mínimos necesarios para renderizar vistas comunes (ej. `_id`, `nombre`, `sexo`, `identificador unico`). Al actualizar el documento de origen, los servicios deben sincronizar de manera asíncrona o controlada estas referencias extendidas para mantener la consistencia eventual.
+
+### 5.3 Containerización con Docker (modo recomendado)
 
 El proyecto puede ejecutarse de dos maneras. **Docker Compose es el modo recomendado**
 porque no requiere instalar Node.js ni MongoDB en el host:
@@ -148,13 +154,6 @@ porque no requiere instalar Node.js ni MongoDB en el host:
 | `.dockerignore` | Excluye `node_modules`, `.env`, `docs/`, `*.md` del contexto de build |
 | `docker-compose.yml` | Servicios `api` (Express) y `mongodb` (MongoDB 7) con healthcheck y volumen persistente |
 
-**Ventajas del modo Docker:**
-- Un solo comando para levantar toda la infraestructura
-- No requiere instalar Node.js ni MongoDB en el host
-- Entorno reproducible y aislado
-- Fácil de limpiar: `docker compose down -v` borra todo
-- Ideal para corrección del parcial
-
 ---
 
 ## 6. Glosario
@@ -169,6 +168,7 @@ porque no requiere instalar Node.js ni MongoDB en el host:
 | **Madre/Dam**     | Madre en el contexto de cría animal                                        |
 | **Soft Delete**   | Eliminación lógica: desactivar un registro sin borrarlo físicamente        |
 | **Camada**        | Conjunto de crías nacidas de un mismo parto                                |
+| **Extended Reference** | Patrón de diseño en NoSQL que consiste en duplicar campos críticos de un documento relacionado para evitar lookups costosos. |
 
 ---
 
@@ -178,3 +178,4 @@ porque no requiere instalar Node.js ni MongoDB en el host:
 |---------|------------|------------------------|--------|
 | 1.0     | 2026-06-06 | Versión inicial                          | Doc Team |
 | 1.1     | 2026-06-06 | Añadida sección 5.2 (Docker opcional)    | Doc Team |
+| 1.2     | 2026-06-27 | Modificado RF-30 (Contraseña mínimo 8 caracteres) y añadida sección 5.2 (Estrategia Extended Reference). | S. Ábrego |

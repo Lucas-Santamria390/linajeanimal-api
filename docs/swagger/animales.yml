@@ -1,5 +1,5 @@
 paths:
-  /api/v1/animales:
+  /api/v1/animals:
     get:
       tags: [Animales]
       summary: Listar animales activos
@@ -15,12 +15,12 @@ paths:
           name: especie
           schema:
             type: string
-          description: Filtra por ID de especie
+          description: Filtra por ID de especie de la referencia extendida
         - in: query
           name: raza
           schema:
             type: string
-          description: Filtra por ID de raza
+          description: Filtra por ID de raza de la referencia extendida
         - in: query
           name: sexo
           schema:
@@ -31,7 +31,7 @@ paths:
           name: propietario
           schema:
             type: string
-          description: Filtra por ID de propietario
+          description: Filtra por ID de propietario de la referencia extendida
         - in: query
           name: page
           schema:
@@ -58,7 +58,7 @@ paths:
                   data:
                     type: array
                     items:
-                      type: object
+                      $ref: '#/components/schemas/Animal'
                   pagination:
                     type: object
                     properties:
@@ -100,10 +100,10 @@ paths:
                   description: Nombre del animal
                 especie:
                   type: string
-                  description: ID de la especie
+                  description: ID de la especie (Se expandirá a objeto embebido en la persistencia)
                 raza:
                   type: string
-                  description: ID de la raza
+                  description: ID de la raza (Se expandirá a objeto embebido en la persistencia)
                 sexo:
                   type: string
                   enum: [macho, hembra]
@@ -147,7 +147,7 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    type: object
+                    $ref: '#/components/schemas/Animal'
         400:
           description: Datos invalidos (validacion)
           content:
@@ -172,7 +172,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /api/v1/animales/{id}:
+
+  /api/v1/animals/{id}:
     get:
       tags: [Animales]
       summary: Obtener un animal por ID
@@ -197,7 +198,7 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    type: object
+                    $ref: '#/components/schemas/Animal'
         400:
           description: ID invalido
           content:
@@ -246,10 +247,10 @@ paths:
                   description: Nombre del animal
                 especie:
                   type: string
-                  description: ID de la especie
+                  description: ID de la especie a actualizar
                 raza:
                   type: string
-                  description: ID de la raza
+                  description: ID de la raza a actualizar
                 sexo:
                   type: string
                   enum: [macho, hembra]
@@ -285,7 +286,7 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    type: object
+                    $ref: '#/components/schemas/Animal'
         400:
           description: Datos invalidos (validacion)
           content:
@@ -340,7 +341,7 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    type: object
+                    $ref: '#/components/schemas/Animal'
         400:
           description: ID invalido
           content:
@@ -371,7 +372,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /api/v1/animales/{id}/arbol-genealogico:
+
+  /api/v1/animals/{id}/arbol-genealogico:
     get:
       tags: [Animales]
       summary: Obtener el arbol genealogico de un animal
@@ -433,7 +435,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /api/v1/animales/{id}/hijos:
+
+  /api/v1/animals/{id}/hijos:
     get:
       tags: [Animales]
       summary: Listar hijos directos de un animal
@@ -460,7 +463,7 @@ paths:
                   data:
                     type: array
                     items:
-                      type: object
+                      $ref: '#/components/schemas/Animal'
         400:
           description: ID invalido
           content:
@@ -485,7 +488,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /api/v1/animales/{id}/hermanos:
+
+  /api/v1/animals/{id}/hermanos:
     get:
       tags: [Animales]
       summary: Listar hermanos de un animal
@@ -512,7 +516,7 @@ paths:
                   data:
                     type: array
                     items:
-                      type: object
+                      $ref: '#/components/schemas/Animal'
         400:
           description: ID invalido
           content:
@@ -537,7 +541,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /api/v1/animales/{id}/padres:
+
+  /api/v1/animals/{id}/padres:
     post:
       tags: [Animales]
       summary: Asignar padres a un animal
@@ -577,7 +582,7 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    type: object
+                    $ref: '#/components/schemas/Animal'
         400:
           description: Datos invalidos (validacion)
           content:
@@ -647,7 +652,7 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    type: object
+                    $ref: '#/components/schemas/Animal'
         400:
           description: Datos invalidos (validacion)
           content:
@@ -681,6 +686,84 @@ paths:
 
 components:
   schemas:
+    Animal:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre:
+          type: string
+        sexo:
+          type: string
+          enum: [macho, hembra]
+        fechaNacimiento:
+          type: string
+          format: date-time
+        peso:
+          type: number
+        color:
+          type: string
+        identificador:
+          type: string
+        fotoUrl:
+          type: string
+        notas:
+          type: string
+        active:
+          type: boolean
+        especie:
+          type: object
+          description: Referencia extendida de la especie
+          properties:
+            _id:
+              type: string
+            nombre:
+              type: string
+        raza:
+          type: object
+          description: Referencia extendida de la raza
+          properties:
+            _id:
+              type: string
+            nombre:
+              type: string
+        propietario:
+          type: object
+          description: Referencia extendida del usuario propietario
+          properties:
+            _id:
+              type: string
+            nombre:
+              type: string
+        padre:
+          type: object
+          nullable: true
+          description: Referencia extendida del ancestro paterno
+          properties:
+            _id:
+              type: string
+            nombre:
+              type: string
+            identificador:
+              type: string
+        madre:
+          type: object
+          nullable: true
+          description: Referencia extendida del ancestro materno
+          properties:
+            _id:
+              type: string
+            nombre:
+              type: string
+            identificador:
+              type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
     Error:
       type: object
       properties:
