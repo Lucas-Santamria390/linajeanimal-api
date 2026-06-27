@@ -36,13 +36,13 @@ const update = async (req, res, next) => {
   }
 };
 
-const remove = async (req, res, next) => {
+const deactivate = async (req, res, next) => {
   try {
-    const especie = await especieService.remove(req.params.id);
+    const especie = await especieService.deactivate(req.params.id);
     res.json({ success: true, data: especie });
   } catch (err) {
     next(err);
   }
 };
 
-module.exports = { list, create, getById, update, remove };
+module.exports = { list, create, getById, update, deactivate };
