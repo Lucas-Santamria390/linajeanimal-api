@@ -105,7 +105,7 @@ router.delete('/:id',
   authorize('admin'),
   param('id').isMongoId().withMessage('ID invalido'),
   validarCampos,
-  controller.remove
+  controller.deactivate
 );
 
 router.get('/:id/arbol-genealogico',
