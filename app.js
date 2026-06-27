@@ -11,6 +11,7 @@ const animalesRoutes = require('./routes/animalesRoutes');
 const authRoutes = require('./routes/authRoutes');
 const usuariosRoutes = require('./routes/usuariosRoutes');
 const errorHandler = require('./middleware/errorHandler');
+const { generalLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
 
@@ -18,12 +19,15 @@ app.use(helmet());
 app.use(cors({ origin: config.corsOrigin }));
 app.use(morgan('dev'));
 app.use(express.json());
+app.use(generalLimiter);
 
 app.get('/api/v1/health', (req, res) => {
   res.status(200).json({ success: true, data: { status: 'OK', timestamp: new Date().toISOString() } });
 });
 
-app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+}
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/especies', especiesRoutes);
