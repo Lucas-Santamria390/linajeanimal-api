@@ -144,7 +144,7 @@ describe('Tests de Especies CRUD (API v1 Especies)', () => {
       const verificarRes = await request(app).get(`/api/v1/especies/${especieId}`);
       
       if (verificarRes.statusCode === 200) {
-        expect(verificarRes.body.data).toHaveProperty('deleted', true);
+        expect(verificarRes.body.data).toHaveProperty('active', false);
       } else {
         expect(verificarRes.statusCode).toEqual(404);
       }
