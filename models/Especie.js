@@ -15,6 +15,10 @@ const especieSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  cantidadAnimales: {
+    type: Number,
+    default: 0,
+  },
 }, {
   timestamps: true,
 });

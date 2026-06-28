@@ -7,14 +7,12 @@ const animalSchema = new mongoose.Schema({
     trim: true,
   },
   especie: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Especie',
-    required: [true, 'La especie es obligatoria'],
+    _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Especie', required: true },
+    nombre: { type: String, required: true },
   },
   raza: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Raza',
-    required: [true, 'La raza es obligatoria'],
+    _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Raza', required: true },
+    nombre: { type: String, required: true },
   },
   sexo: {
     type: String,
@@ -60,9 +58,13 @@ const animalSchema = new mongoose.Schema({
     default: null,
   },
   propietario: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Usuario',
-    required: [true, 'El propietario es obligatorio'],
+    _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', required: true },
+    nombre: { type: String, required: true },
+    email: { type: String, required: true },
+  },
+  cantidadHijos: {
+    type: Number,
+    default: 0,
   },
   active: {
     type: Boolean,
@@ -73,12 +75,11 @@ const animalSchema = new mongoose.Schema({
 });
 
 animalSchema.index({ nombre: 1 });
-animalSchema.index({ especie: 1, raza: 1 });
+animalSchema.index({ 'especie._id': 1, 'raza._id': 1, active: 1 });
 animalSchema.index({ sexo: 1 });
 animalSchema.index({ padre: 1 });
 animalSchema.index({ madre: 1 });
-animalSchema.index({ propietario: 1 });
-
+animalSchema.index({ 'propietario._id': 1, active: 1 });
 animalSchema.index({ active: 1 });
 
 module.exports = mongoose.model('Animal', animalSchema);

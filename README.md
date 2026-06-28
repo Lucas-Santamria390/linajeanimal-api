@@ -76,6 +76,8 @@ npm run dev
 | POST | `/api/v1/auth/register` | No | — | Registrar usuario |
 | POST | `/api/v1/auth/login` | No | — | Iniciar sesión |
 | GET | `/api/v1/auth/profile` | Sí | — | Perfil del usuario autenticado |
+| PUT | `/api/v1/auth/password` | Sí | — | Actualizar contraseña |
+| POST | `/api/v1/auth/logout` | Sí | — | Cerrar sesión |
 
 ### Especies
 
@@ -106,18 +108,21 @@ npm run dev
 | GET | `/api/v1/animales/:id` | Sí | — | Detalle de animal |
 | PUT | `/api/v1/animales/:id` | Sí | — | Actualizar animal |
 | DELETE | `/api/v1/animales/:id` | Sí | — | Desactivar animal |
-| POST | `/api/v1/animales/:id/padres` | Sí | — | Asignar o desasignar padres |
-| PATCH | `/api/v1/animales/:id/padres` | Sí | — | Asignar o desasignar padres (alias) |
-| GET | `/api/v1/animales/:id/arbol-genealogico` | Sí | — | Árbol genealógico |
-| GET | `/api/v1/animales/:id/hijos` | Sí | — | Hijos directos |
-| GET | `/api/v1/animales/:id/hermanos` | Sí | — | Hermanos |
+| POST | `/api/v1/animales/:id/parents` | Sí | — | Asignar o desasignar padres |
+| GET | `/api/v1/animales/:id/family-tree` | Sí | — | Árbol genealógico |
+| GET | `/api/v1/animales/:id/children` | Sí | — | Hijos directos |
+| GET | `/api/v1/animales/:id/siblings` | Sí | — | Hermanos |
 
 ### Usuarios
 
 | Método | Ruta | Auth | Rol | Descripción |
 |--------|------|------|-----|-------------|
-| GET | `/api/v1/usuarios` | Sí | admin | Listar todos los usuarios |
+| GET | `/api/v1/usuarios` | Sí | admin | Listar usuarios (paginado) |
+| POST | `/api/v1/usuarios` | Sí | admin | Crear usuario |
+| GET | `/api/v1/usuarios/:id` | Sí | admin | Detalle de usuario |
+| PUT | `/api/v1/usuarios/:id` | Sí | admin | Actualizar usuario |
 | DELETE | `/api/v1/usuarios/:id` | Sí | admin | Desactivar usuario (soft delete) |
+| PATCH | `/api/v1/usuarios/:id` | Sí | admin | Activar/desactivar usuario |
 
 ### Utilidades
 
@@ -128,10 +133,17 @@ npm run dev
 
 ## Documentación interactiva
 
-La API cuenta con documentación Swagger disponible en:
+La API está desplegada en:
+
+```
+https://linajeanimal-api.onrender.com
+```
+
+Documentación Swagger disponible en:
 
 ```
 http://localhost:3000/api/v1/docs
+https://linajeanimal-api.onrender.com/api/v1/docs
 ```
 
 ## Comandos disponibles
@@ -141,6 +153,7 @@ http://localhost:3000/api/v1/docs
 | `npm run docker` | Levantar API + MongoDB con Docker Compose |
 | `npm run dev` | Iniciar en modo desarrollo con nodemon |
 | `npm start` | Iniciar en modo producción |
+| `npm run seed` | Poblar la base de datos con datos de prueba |
 
 ## Estructura del proyecto
 
@@ -157,8 +170,23 @@ http://localhost:3000/api/v1/docs
 ├── app.js           # Configuración de Express
 ├── Dockerfile       # Imagen multi-stage
 ├── docker-compose.yml  # Servicios API + MongoDB
-└── seed.js          # Datos de prueba (próximamente)
+└── seed.js          # Script de seed con datos de prueba
 ```
+
+## Seed de prueba
+
+El script `npm run seed` limpia las colecciones principales y crea datos de ejemplo
+para:
+
+- 2 usuarios de prueba: `admin` y `user`
+- 3 especies: `Perro`, `Gato` y `Caballo`
+- 6 razas vinculadas a sus especies
+- 10+ animales, incluyendo una linea genealogica de 3 generaciones
+
+Credenciales creadas por el seed:
+
+- `admin@linajeanimal.test` / `Admin123!`
+- `usuario@linajeanimal.test` / `User123!`
 
 ## Licencia
 

@@ -1,19 +1,12 @@
 const { Router } = require('express');
-const { body, param, validationResult } = require('express-validator');
+const { body, param, query } = require('express-validator');
 const mongoose = require('mongoose');
 const controller = require('../controllers/animalController');
 const auth = require('../middleware/auth');
+const authorize = require('../middleware/role');
+const validarCampos = require('../middleware/validarCampos');
 
 const router = Router();
-
-const validarCampos = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    const messages = errors.array().map(e => e.msg).join('; ');
-    return res.status(400).json({ success: false, message: messages });
-  }
-  next();
-};
 
 const mongoIdOptional = (field, message) => {
   return body(field)
@@ -27,7 +20,11 @@ const createValidators = [
   body('especie').isMongoId().withMessage('La especie debe ser un ID valido'),
   body('raza').isMongoId().withMessage('La raza debe ser un ID valido'),
   body('sexo').isIn(['macho', 'hembra']).withMessage('El sexo debe ser macho o hembra'),
-  body('fechaNacimiento').isISO8601().withMessage('La fecha de nacimiento no es valida').toDate(),
+  body('fechaNacimiento').isISO8601().withMessage('La fecha de nacimiento no es valida').toDate()
+    .custom((value) => {
+      if (value > new Date()) throw new Error('La fecha de nacimiento no puede ser futura');
+      return true;
+    }),
   body('peso').optional({ nullable: true }).isFloat({ min: 0 }).withMessage('El peso debe ser un numero valido y positivo').toFloat(),
   body('color').optional({ nullable: true }).trim().escape(),
   body('identificador').optional({ nullable: true }).trim().escape(),
@@ -42,7 +39,11 @@ const updateValidators = [
   body('especie').optional({ nullable: true }).isMongoId().withMessage('La especie debe ser un ID valido'),
   body('raza').optional({ nullable: true }).isMongoId().withMessage('La raza debe ser un ID valido'),
   body('sexo').optional({ nullable: true }).isIn(['macho', 'hembra']).withMessage('El sexo debe ser macho o hembra'),
-  body('fechaNacimiento').optional({ nullable: true }).isISO8601().withMessage('La fecha de nacimiento no es valida').toDate(),
+  body('fechaNacimiento').optional({ nullable: true }).isISO8601().withMessage('La fecha de nacimiento no es valida').toDate()
+    .custom((value) => {
+      if (value > new Date()) throw new Error('La fecha de nacimiento no puede ser futura');
+      return true;
+    }),
   body('peso').optional({ nullable: true }).isFloat({ min: 0 }).withMessage('El peso debe ser un numero valido y positivo').toFloat(),
   body('color').optional({ nullable: true }).trim().escape(),
   body('identificador').optional({ nullable: true }).trim().escape(),
@@ -68,6 +69,12 @@ const atLeastOneParent = (req, res, next) => {
 
 router.get('/',
   auth,
+  query('especie').optional().isMongoId().withMessage('Especie invalida'),
+  query('raza').optional().isMongoId().withMessage('Raza invalida'),
+  query('propietario').optional().isMongoId().withMessage('Propietario invalido'),
+  query('sexo').optional().isIn(['macho', 'hembra']).withMessage('Sexo invalido'),
+  query('active').optional().isBoolean().withMessage('Active debe ser booleano'),
+  validarCampos,
   controller.list
 );
 
@@ -95,42 +102,34 @@ router.put('/:id',
 
 router.delete('/:id',
   auth,
+  authorize('admin'),
   param('id').isMongoId().withMessage('ID invalido'),
   validarCampos,
-  controller.remove
+  controller.deactivate
 );
 
-router.get('/:id/arbol-genealogico',
+router.get('/:id/family-tree',
   auth,
   param('id').isMongoId().withMessage('ID invalido'),
   validarCampos,
   controller.tree
 );
 
-router.get('/:id/hijos',
+router.get('/:id/children',
   auth,
   param('id').isMongoId().withMessage('ID invalido'),
   validarCampos,
   controller.children
 );
 
-router.get('/:id/hermanos',
+router.get('/:id/siblings',
   auth,
   param('id').isMongoId().withMessage('ID invalido'),
   validarCampos,
   controller.siblings
 );
 
-router.post('/:id/padres',
-  auth,
-  param('id').isMongoId().withMessage('ID invalido'),
-  ...parentValidators,
-  atLeastOneParent,
-  validarCampos,
-  controller.assignParents
-);
-
-router.patch('/:id/padres',
+router.post('/:id/parents',
   auth,
   param('id').isMongoId().withMessage('ID invalido'),
   ...parentValidators,

@@ -1,6 +1,6 @@
 # Plan de Implementación — LinajeAnimal
 
-> **Versión:** 1.0  
+> **Versión:** 1.2  
 > **Proyecto:** LinajeAnimal — API REST para gestión de árbol genealógico de animales  
 > **Fecha:** Junio 2026
 
@@ -250,7 +250,7 @@ async function construirArbol(animalId, profundidad = 3, actual = 0) {
 
 ---
 
-## Fase 8: Seed data y documentación (parcial)
+## Fase 8: Seed data y documentación (completa)
 
 > Dependencias: Fase 6 (todas las entidades creadas)  
 > Objetivo: Poblar la BD con datos de ejemplo y generar documentación de la API.
@@ -325,6 +325,9 @@ Fase 3 (CRUD         Fase 4 (Auth)
             │
             ▼
       Fase 8 (Seed + Docs)
+            │
+            ▼
+      Fase 9 (Optimización: Extended Reference & Computed) ✅
 ```
 
 Docker Compose se crea en la **Fase 0** (tareas 0.8-0.10) y el `docker-compose.yml`
@@ -341,7 +344,7 @@ incluye el servicio `mongodb`, por lo que no se necesita MongoDB instalado en el
 ├── .gitignore                    # Fase 0 ✅
 ├── server.js                     # Fase 1 (solo listen()) ✅
 ├── app.js                        # Fase 1 (config Express) ✅
-├── seed.js                       # Fase 8 ❌ pendiente
+├── seed.js                       # Fase 8 ✅
 ├── postman_collection.json       # Fase 8 ❌ pendiente
 ├── README.md                     # Fase 8 ✅
 │
@@ -395,6 +398,8 @@ incluye el servicio `mongodb`, por lo que no se necesita MongoDB instalado en el
     ├── plan.md                   # Documentación ✅
     └── swagger/
         ├── auth.yml              # Documentación ✅
+        ├── especies.yml          # Documentación ✅
+        ├── razas.yml             # Documentación ✅
         ├── animales.yml          # Documentación ✅
         └── usuarios.yml          # Documentación ✅
 ```
@@ -417,8 +422,8 @@ incluye el servicio `mongodb`, por lo que no se necesita MongoDB instalado en el
 | 10  | Rate limiting en auth routes                      | 4    | ✅ |
 | 11  | Helmet, CORS                                      | 1    | ✅ |
 | 12  | Sin password en respuestas                        | 2    | ✅ |
-| 13  | Seed data                                         | 8    | ❌ |
-| 14  | Postman collection o Swagger                      | 8    | ✅ (Swagger: auth, animales, usuarios) |
+| 13  | Seed data                                         | 8    | ✅ |
+| 14  | Postman collection o Swagger                      | 8    | ✅ (Swagger: auth, especies, razas, animales, usuarios) |
 | 15  | .env.example presente                             | 0    | ✅ |
 | 16  | Health check endpoint                             | 1    | ✅ |
 | 17  | README completo                                   | 8    | ✅ |
@@ -428,8 +433,78 @@ incluye el servicio `mongodb`, por lo que no se necesita MongoDB instalado en el
 
 ---
 
-## 5. Histórico de Cambios
+## 5. Fase 9 — Optimización de esquema MongoDB ✅ COMPLETADA
+
+> Dependencias: Fase 8  
+> Objetivo: Optimizar el diseño de documentos según patrones MongoDB para reducir consultas y mejorar rendimiento.  
+> **Estado:** COMPLETADA — Todas las tareas 9.1 a 9.10 están implementadas en `develop`.
+
+| #   | Tarea                                                              | Patrón            | Archivos involucrados      | Estado |
+|-----|--------------------------------------------------------------------|-------------------|----------------------------|--------|
+| 9.1 | Agregar Extended Reference en `Animal` para `especie` (`{ _id, nombre }`) | Extended Reference | `models/Animal.js`, `services/animalService.js`, seed | ✅ |
+| 9.2 | Agregar Extended Reference en `Animal` para `raza` (`{ _id, nombre }`)     | Extended Reference | `models/Animal.js`, `services/animalService.js`, seed | ✅ |
+| 9.3 | Agregar Extended Reference en `Animal` para `propietario` (`{ _id, nombre, email }`) | Extended Reference | `models/Animal.js`, `services/animalService.js`, seed | ✅ |
+| 9.4 | Agregar campo computado `cantidadHijos` en `Animal` con `$inc`       | Computed          | `models/Animal.js`, `services/animalService.js` | ✅ |
+| 9.5 | Agregar campo computado `cantidadAnimales` en `Especie` y `Raza`    | Computed          | `models/Especie.js`, `models/Raza.js`, services | ✅ |
+| 9.6 | Sincronización: hook `post('save')` en `Especie` para actualizar nombres en `Animal` | Extended Reference | `models/Especie.js`, `services/animalService.js` | ✅ |
+| 9.7 | Sincronización: hook `post('save')` en `Raza` para actualizar nombres en `Animal` | Extended Reference | `models/Raza.js`, `services/animalService.js` | ✅ |
+| 9.8 | Migración: script para backfill de datos existentes                | —                 | `scripts/migrate-v2.js`    | ✅ |
+| 9.9 | Eliminar `populate` redundantes en `animalService` (especie, raza, propietario) | —                 | `services/animalService.js` | ✅ |
+| 9.10 | Agregar índices compuestos faltantes según queries de la app       | —                 | Modelos                   | ✅ |
+
+**Total estimado:** 2h 50min
+
+### Detalle de cambios implementados
+
+```javascript
+// models/Animal.js — después de Fase 9
+const animalSchema = new mongoose.Schema({
+  nombre: { type: String, required: true, trim: true },
+  especie: {
+    _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Especie', required: true },
+    nombre: { type: String, required: true }
+  },
+  raza: {
+    _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Raza', required: true },
+    nombre: { type: String, required: true }
+  },
+  propietario: {
+    _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', required: true },
+    nombre: { type: String, required: true },
+    email: { type: String, required: true }
+  },
+  padre: { type: mongoose.Schema.Types.ObjectId, ref: 'Animal', default: null },
+  madre: { type: mongoose.Schema.Types.ObjectId, ref: 'Animal', default: null },
+  cantidadHijos: { type: Number, default: 0 },
+  // ... resto de campos igual
+});
+```
+
+```javascript
+// En animalService.create — actualizar cantidadHijos del padre/madre
+if (payload.padre) {
+  await Animal.findByIdAndUpdate(payload.padre, { $inc: { cantidadHijos: 1 } });
+}
+if (payload.madre) {
+  await Animal.findByIdAndUpdate(payload.madre, { $inc: { cantidadHijos: 1 } });
+}
+```
+
+### Efecto logrado
+
+| Consulta | Antes (populates) | Después (populates) | Mejora |
+|---|---|---|---|
+| `GET /api/v1/animales` | 5 por documento | 2 (padre, madre) | −60% |
+| `GET /api/v1/animales/:id` | 5 | 2 (padre, madre) | −60% |
+| `GET /arbol-genealogico/:id` | 5 por nodo | 0 (todo en el doc) | −100% |
+| `GET /:id/hijos` | 1 query + 5 populates | 1 query + 2 populates | −60% |
+
+---
+
+## 6. Histórico de Cambios
 
 | Versión | Fecha      | Descripción            | Autor  |
 |---------|------------|------------------------|--------|
 | 1.0     | 2026-06-06 | Versión inicial                          | Doc Team |
+| 1.1     | 2026-06-19 | Agregada Fase 9 — Optimización MongoDB   | Doc Team |
+| 1.2     | 2026-06-27 | **Cierre definitivo de la Fase 9.** Se actualiza el documento reflejando la implementación real del patrón *Extended Reference* y *Computed*, el desuso de los hooks de Mongoose moviendo la lógica a servicios, y el cambio formal de las rutas de animales a inglés. | S. Ábrego |

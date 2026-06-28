@@ -17,7 +17,7 @@ const usuarioSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'La contraseña es obligatoria'],
-    minlength: [6, 'La contraseña debe tener al menos 6 caracteres'],
+    minlength: [8, 'La contraseña debe tener al menos 8 caracteres'],
     select: false,
   },
   rol: {
@@ -31,6 +31,10 @@ const usuarioSchema = new mongoose.Schema({
   active: {
     type: Boolean,
     default: true,
+  },
+  tokenVersion: {
+    type: Number,
+    default: 0,
   },
 }, {
   timestamps: true,

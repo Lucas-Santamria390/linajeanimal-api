@@ -36,9 +36,9 @@ const update = async (req, res, next) => {
   }
 };
 
-const remove = async (req, res, next) => {
+const deactivate = async (req, res, next) => {
   try {
-    const animal = await animalService.remove(req.params.id, req.usuario);
+    const animal = await animalService.deactivate(req.params.id, req.usuario);
     res.json({ success: true, data: animal });
   } catch (err) {
     next(err);
@@ -87,7 +87,7 @@ module.exports = {
   create,
   getById,
   update,
-  remove,
+  deactivate,
   tree,
   children,
   siblings,

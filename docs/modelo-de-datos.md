@@ -1,6 +1,6 @@
 # Modelo de Datos — LinajeAnimal
 
-> **Versión:** 1.0  
+> **Versión:** 1.2  
 > **Proyecto:** LinajeAnimal — API REST para gestión de árbol genealógico de animales  
 > **Fecha:** Junio 2026
 
@@ -27,7 +27,15 @@ Todas las entidades incluyen el campo `active: Boolean` con valor por defecto `t
 Ninguna operación elimina físicamente documentos. Se usa `findByIdAndUpdate` con
 `{ active: false }` para desactivar.
 
-### 1.3 Timestamps
+### 1.3 Extended Reference (Referencia Extendida)
+
+Para optimizar consultas frecuentes, las relaciones `especie`, `raza` y `propietario` en el documento `Animal` usan el patrón **Extended Reference**: en lugar de un `ObjectId` simple, se almacena un objeto parcial con los datos mínimos (`_id`, `nombre` y opcionalmente `email`).
+
+**Ventaja:** Reduce `.populate()` de 5 a 2 (solo `padre`/`madre`), mejorando rendimiento en lecturas.
+
+**Sincronización:** Al actualizar el nombre de una Especie, Raza o Usuario, los servicios actualizan los nombres embebidos en los documentos `Animal` afectados para mantener consistencia eventual.
+
+### 1.4 Timestamps
 
 Todos los modelos incluyen `createdAt` y `updatedAt` automáticos (opción `timestamps: true` de Mongoose).
 
@@ -143,8 +151,8 @@ genealógica y de identificación.
 |------------------|--------------|-----------|-------|---------------|-------------------------------------------------------|
 | `_id`            | ObjectId     | Auto      | Sí    | Auto          | Identificador único                                   |
 | `nombre`         | String       | Sí        | No    | —             | Nombre del animal                                     |
-| `especie`        | ObjectId     | Sí        | No    | —             | Ref. a Especie                                        |
-| `raza`           | ObjectId     | Sí        | No    | —             | Ref. a Raza                                           |
+| `especie`        | Objeto       | Sí        | No    | —             | Extended Reference `{ _id, nombre }` a Especie        |
+| `raza`           | Objeto       | Sí        | No    | —             | Extended Reference `{ _id, nombre }` a Raza           |
 | `sexo`           | String       | Sí        | No    | —             | Enum: `'macho'` o `'hembra'`                          |
 | `fechaNacimiento`| Date         | Sí        | No    | —             | Fecha de nacimiento                                   |
 | `peso`           | Number       | No        | No    | —             | Peso en kg                                            |
@@ -154,7 +162,8 @@ genealógica y de identificación.
 | `notas`          | String       | No        | No    | —             | Observaciones adicionales                             |
 | `padre`          | ObjectId     | No        | No    | `null`        | Ref. a Animal (padre) — debe ser macho                |
 | `madre`          | ObjectId     | No        | No    | `null`        | Ref. a Animal (madre) — debe ser hembra               |
-| `propietario`    | ObjectId     | Sí        | No    | —             | Ref. a Usuario que registró el animal                 |
+| `propietario`    | Objeto       | Sí        | No    | —             | Extended Reference `{ _id, nombre, email }` a Usuario |
+| `cantidadHijos`  | Number       | No        | No    | `0`           | Campo computado (se incrementa al asignar padres)     |
 | `active`         | Boolean      | No        | No    | `true`        | Soft delete                                           |
 | `createdAt`      | Date         | Auto      | No    | Auto          | Fecha de creación                                     |
 | `updatedAt`      | Date         | Auto      | No    | Auto          | Fecha de última actualización                         |
@@ -174,8 +183,14 @@ genealógica y de identificación.
 {
   "_id": "ObjectId('...')",
   "nombre": "Rex",
-  "especie": "ObjectId('id-especie-canino')",
-  "raza": "ObjectId('id-raza-labrador')",
+  "especie": {
+    "_id": "ObjectId('id-especie-canino')",
+    "nombre": "Canino"
+  },
+  "raza": {
+    "_id": "ObjectId('id-raza-labrador')",
+    "nombre": "Labrador Retriever"
+  },
   "sexo": "macho",
   "fechaNacimiento": "2022-03-15T00:00:00.000Z",
   "peso": 32.5,
@@ -185,7 +200,12 @@ genealógica y de identificación.
   "notas": "Campeón regional de obediencia 2024",
   "padre": "ObjectId('id-padre')",
   "madre": "ObjectId('id-madre')",
-  "propietario": "ObjectId('id-usuario')",
+  "propietario": {
+    "_id": "ObjectId('id-usuario')",
+    "nombre": "Juan Pérez",
+    "email": "juan@ejemplo.com"
+  },
+  "cantidadHijos": 0,
   "active": true,
   "createdAt": "2026-06-06T12:00:00.000Z",
   "updatedAt": "2026-06-06T12:00:00.000Z"
@@ -242,14 +262,23 @@ genealógica y de identificación.
                   └──────────────────────────────────┘
 ```
 
+### Nota sobre Extended References
+
+Aunque el diagrama muestra `especie`, `raza` y `propietario` como relaciones a otras colecciones, en la implementación actual estos campos son **objetos embebidos parciales** (Extended Reference):
+- `especie`: `{ _id: ObjectId, nombre: String }`
+- `raza`: `{ _id: ObjectId, nombre: String }`
+- `propietario`: `{ _id: ObjectId, nombre: String, email: String }`
+
+Esto permite reducir `.populate()` de 5 a 2 (solo `padre`/`madre` son ObjectId simples).
+
 ### Relaciones clave:
 
-1. **Animal → Especie:** Muchos a uno (N:1). Cada animal pertenece a una especie.
-2. **Animal → Raza:** Muchos a uno (N:1). Cada animal pertenece a una raza.
+1. **Animal → Especie:** Muchos a uno (N:1). Cada animal pertenece a una especie (Extended Reference).
+2. **Animal → Raza:** Muchos a uno (N:1). Cada animal pertenece a una raza (Extended Reference).
 3. **Raza → Especie:** Muchos a uno (N:1). Una especie tiene muchas razas.
-4. **Animal → Animal (padre):** Auto-referencia N:1. Un animal tiene un padre (macho).
-5. **Animal → Animal (madre):** Auto-referencia N:1. Un animal tiene una madre (hembra).
-6. **Animal → Usuario (propietario):** Muchos a uno (N:1). Un usuario puede registrar muchos animales.
+4. **Animal → Animal (padre):** Auto-referencia N:1. Un animal tiene un padre (macho, ObjectId simple).
+5. **Animal → Animal (madre):** Auto-referencia N:1. Un animal tiene una madre (hembra, ObjectId simple).
+6. **Animal → Usuario (propietario):** Muchos a uno (N:1). Un usuario puede registrar muchos animales (Extended Reference).
 
 ---
 
@@ -272,7 +301,7 @@ genealógica y de identificación.
 | Solo los administradores pueden crear/especies/razas                    | Role middleware                                     |
 | Un usuario `user` solo puede modificar animales donde sea `propietario`| Verificación en service                             |
 | El email debe tener formato válido                                     | express-validator + regex                           |
-| Password mínimo 6 caracteres                                           | express-validator                                   |
+| Password mínimo 8 caracteres                                           | express-validator + modelo (minlength: 8)           |
 | ObjectId debe ser válido antes de consultar la BD                      | express-validator inline con `param('id').isMongoId()` en cada ruta |
 
 ---
@@ -291,3 +320,4 @@ genealógica y de identificación.
 | Versión | Fecha      | Descripción            | Autor  |
 |---------|------------|------------------------|--------|
 | 1.0     | 2026-06-06 | Versión inicial        | Doc Team |
+| 1.2     | 2026-06-27 | Actualizados esquemas de Animal con Extended Reference (`especie`, `raza`, `propietario` como objetos embebidos); agregado campo `cantidadHijos`; actualizado password mínimo a 8 caracteres. | Doc Team |

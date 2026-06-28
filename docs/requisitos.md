@@ -1,6 +1,6 @@
 # Requisitos del Sistema — LinajeAnimal
 
-> **Versión:** 1.0  
+> **Versión:** 1.2  
 > **Proyecto:** LinajeAnimal — API REST para gestión de árbol genealógico de animales  
 > **Fecha:** Junio 2026
 
@@ -72,7 +72,7 @@ que necesite mantener un registro estructurado de animales con trazabilidad gene
 | RF-27  | Rate limiting en rutas de autenticación (máx. 10 intentos por cada 15 minutos) | Alta      |
 | RF-28  | Protección de headers con Helmet                                            | Alta      |
 | RF-29  | CORS configurado (permitir orígenes específicos)                            | Alta      |
-| RF-30  | Contraseñas hasheadas con bcrypt (salt ≥ 10)                                | Alta      |
+| RF-30  | Contraseñas hasheadas con bcrypt (salt ≥ 10, longitud mínima de 8 caracteres) | Alta      |
 | RF-31  | Validación de datos de entrada en todas las rutas                           | Alta      |
 
 ### 2.6 Utilidades
@@ -130,7 +130,13 @@ que necesite mantener un registro estructurado de animales con trazabilidad gene
 - **Gestor de paquetes:** npm
 - **Entorno:** Node.js ≥ 18
 
-### 5.2 Containerización con Docker (modo recomendado)
+### 5.2 Estrategia de Modelado de Datos (Extended Reference)
+
+Para optimizar las consultas frecuentes del árbol genealógico y reducir el uso excesivo de `.populate()` en lecturas masivas, el diseño de la base de datos implementa **Extended Reference (Referencias Extendidas / Objetos Embebidos Parciales)**:
+
+> **Regla de Diseño:** En lugar de almacenar únicamente el `ObjectId` para las relaciones de clasificación (Especie/Raza/Propietario), se embebe un objeto parcial con los datos mínimos necesarios para renderizar vistas comunes (ej. `_id`, `nombre`, `email`). Al actualizar el documento de origen, los servicios deben sincronizar de manera controlada estas referencias extendidas para mantener la consistencia eventual.
+
+### 5.3 Containerización con Docker (modo recomendado)
 
 El proyecto puede ejecutarse de dos maneras. **Docker Compose es el modo recomendado**
 porque no requiere instalar Node.js ni MongoDB en el host:

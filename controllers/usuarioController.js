@@ -2,8 +2,8 @@ const usuarioService = require('../services/usuarioService');
 
 const list = async (req, res, next) => {
   try {
-    const usuarios = await usuarioService.list();
-    res.json({ success: true, data: usuarios });
+    const result = await usuarioService.list(req.query);
+    res.json({ success: true, ...result });
   } catch (err) {
     next(err);
   }
@@ -45,4 +45,13 @@ const deactivate = async (req, res, next) => {
   }
 };
 
-module.exports = { list, getById, create, update, deactivate };
+const setActive = async (req, res, next) => {
+  try {
+    const usuario = await usuarioService.setActive(req.params.id, req.body.active, req.usuario._id);
+    res.json({ success: true, data: usuario });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { list, getById, create, update, deactivate, setActive };
