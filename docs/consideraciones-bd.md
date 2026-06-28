@@ -1,6 +1,6 @@
 # Consideraciones de Base de Datos — LinajeAnimal
 
-> **Versión:** 1.0  
+> **Versión:** 1.2  
 > **Proyecto:** LinajeAnimal — API REST para gestión de árbol genealógico de animales  
 > **Fecha:** Junio 2026
 
@@ -48,17 +48,22 @@ Animal {
 - No se permiten ciclos genealógicos (validación en `isDescendantOf` en `animalService.js`)
 - El padre y la madre no pueden ser el mismo animal
 
-### 2.2 Referencias simples (ObjectId)
+### 2.2 Extended References (Objetos Embebidos Parciales)
 
-Todas las relaciones entre colecciones usan ObjectId como referencia:
+Para las relaciones más consultadas junto con `Animal`, se usa el patrón **Extended Reference**: en vez de un ObjectId simple, se almacena un objeto con los datos mínimos.
 
-| Colección | Campo | Refiere a | ¿Por qué referencia? |
+| Colección | Campo | Tipo | ¿Por qué Extended Reference? |
 |---|---|---|---|
-| `razas` | `especie` | `especies` | Una especie tiene muchas razas |
-| `animales` | `especie` | `especies` | Muchos animales comparten la misma especie |
-| `animales` | `raza` | `razas` | Muchos animales comparten la misma raza |
-| `animales` | `padre`/`madre` | `animales` | Estructura de árbol (Parent References) |
-| `animales` | `propietario` | `usuarios` | Un usuario puede tener muchos animales |
+| `animales` | `especie` | Objeto `{ _id, nombre }` | Se consulta siempre con el animal |
+| `animales` | `raza` | Objeto `{ _id, nombre }` | Se consulta siempre con el animal |
+| `animales` | `propietario` | Objeto `{ _id, nombre, email }` | Se consulta siempre con el animal |
+| `animales` | `padre`/`madre` | ObjectId (ref: Animal) | Parent References para árbol genealógico |
+
+### 2.3 Computed Pattern
+
+Se utiliza el patrón **Computed** para el campo `cantidadHijos` en `Animal`, que se actualiza mediante `$inc` cada vez que se asigna un padre o madre. Esto evita contar hijos en cada consulta.
+
+### 2.4 Soft Delete
 
 ### 2.3 Soft Delete
 
@@ -114,30 +119,26 @@ db.animales.aggregate([{ $indexStats: {} }])
 
 ---
 
-## 4. Patrones a considerar en futuros sprints
+## 4. Patrones implementados (Fase 9 completada)
 
-### 4.1 Extended Reference
+### 4.1 Extended Reference ✅
 
-Copiar campos de uso frecuente de un documento referenciado directamente en el documento actual para evitar `populate` innecesarios.
+Se aplica en `Animal` para `especie`, `raza` y `propietario`. Cada campo almacena un objeto parcial con `_id` y `nombre` (y `email` para propietario), eliminando la necesidad de `.populate()` en estos campos.
 
-**Cuándo aplica:**
-- Cuando un campo de otra colección se consulta siempre junto con el documento actual
-- Ejemplo: guardar `{ _id, nombre }` de `especie` y `raza` dentro del documento `Animal`
+**Sincronización:** Al actualizar el nombre de una Especie, Raza o Usuario, los servicios correspondientes propagan el cambio a los documentos `Animal` afectados para mantener consistencia eventual.
 
-**Precaución:** Los datos duplicados pueden quedar desactualizados. Si se aplica, debe haber un mecanismo de sincronización (ej. hook `post('save')` en el modelo origen).
+### 4.2 Computed Pattern ✅
 
-### 4.2 Computed Pattern
+Implementado en `Animal` con el campo `cantidadHijos`, que se actualiza mediante `$inc` al asignar o desasignar padres:
 
-Almacenar valores precalculados para evitar cómputos repetitivos.
-
-**Cuándo aplica:**
-- Cuando las lecturas son mucho más frecuentes que las escrituras
-- Ejemplo: `cantidadHijos` en `Animal` para evitar consultar hijos cada vez
-
-**Implementación:**
 ```js
-// Al asignar un padre/madre:
-await Animal.findByIdAndUpdate(padreId, { $inc: { cantidadHijos: 1 } });
+// En animalService.create / assignParents:
+if (payload.padre) {
+  await Animal.findByIdAndUpdate(payload.padre, { $inc: { cantidadHijos: 1 } });
+}
+if (payload.madre) {
+  await Animal.findByIdAndUpdate(payload.madre, { $inc: { cantidadHijos: 1 } });
+}
 ```
 
 ### 4.3 Subset Pattern
@@ -194,3 +195,4 @@ db.animales.aggregate([{ $indexStats: {} }])
 | Versión | Fecha      | Descripción | Autor |
 |---------|------------|-------------|-------|
 | 1.0     | 2026-06-19 | Versión inicial | Doc Team |
+| 1.2     | 2026-06-27 | Sección 2.2 actualizada: Extended Reference y Computed Pattern marcados como implementados; sección 4 movida de "futuros sprints" a "implementados". | S. Ábrego |

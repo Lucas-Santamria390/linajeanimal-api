@@ -256,6 +256,44 @@ describe('Tests de Animales CRUD + Genealogía (API v1 Animales)', () => {
       expect(res.body).toHaveProperty('success', true);
       expect(res.body.data.padre._id.toString()).toEqual(idNuevoPadre.toString());
     });
+
+    it('Debería denegar asignar un padre macho como madre (400)', async () => {
+      const res = await request(app)
+        .post(`/api/v1/animales/${idAnimalPrincipal}/parents`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .send({ madre: idNuevoPadre.toString() });
+      expect(res.statusCode).toEqual(400);
+      expect(res.body).toHaveProperty('success', false);
+    });
+
+    it('Debería denegar asignar un padre inexistente (400)', async () => {
+      const fakeId = new mongoose.Types.ObjectId();
+      const res = await request(app)
+        .post(`/api/v1/animales/${idAnimalPrincipal}/parents`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .send({ padre: fakeId.toString() });
+      expect(res.statusCode).toEqual(404);
+      expect(res.body).toHaveProperty('success', false);
+    });
+
+    it('Debería denegar asignar un descendiente como madre (400)', async () => {
+      const res = await request(app)
+        .post(`/api/v1/animales/${idPadre}/parents`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .send({ madre: idHermano.toString() });
+      expect(res.statusCode).toEqual(400);
+      expect(res.body).toHaveProperty('success', false);
+    });
+
+    it('Debería obtener el árbol genealógico con profundidad personalizada (200)', async () => {
+      const res = await request(app)
+        .get(`/api/v1/animales/${idAnimalPrincipal}/family-tree?generaciones=1`)
+        .set('Authorization', `Bearer ${tokenAdmin}`);
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toHaveProperty('success', true);
+      expect(res.body.data).toHaveProperty('generaciones', 1);
+      expect(res.body.data).toHaveProperty('arbol');
+    });
   });
 
   describe('DELETE /api/v1/animales/:id', () => {
