@@ -97,4 +97,4 @@ const getProfile = async (id) => {
   return usuario;
 };
 
-module.exports = { register, login, changePassword, logout, getProfile };
+module.exports = { register, login, changePassword, logout, getProfile, generateToken };
