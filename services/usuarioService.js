@@ -23,7 +23,7 @@ const list = async (query = {}) => {
 
 const getById = async (id) => {
   const usuario = await Usuario.findById(id);
-  if (!usuario) {
+  if (!usuario || !usuario.active) {
     throw createError('Usuario no encontrado', 404);
   }
   return usuario;
