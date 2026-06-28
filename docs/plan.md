@@ -1,6 +1,6 @@
 # Plan de Implementación — LinajeAnimal
 
-> **Versión:** 1.0  
+> **Versión:** 1.2  
 > **Proyecto:** LinajeAnimal — API REST para gestión de árbol genealógico de animales  
 > **Fecha:** Junio 2026
 
@@ -325,6 +325,9 @@ Fase 3 (CRUD         Fase 4 (Auth)
             │
             ▼
       Fase 8 (Seed + Docs)
+            │
+            ▼
+      Fase 9 (Optimización: Extended Reference & Computed) ✅
 ```
 
 Docker Compose se crea en la **Fase 0** (tareas 0.8-0.10) y el `docker-compose.yml`
@@ -430,27 +433,28 @@ incluye el servicio `mongodb`, por lo que no se necesita MongoDB instalado en el
 
 ---
 
-## 5. Fase 9 — Optimización de esquema MongoDB (futuro sprint)
+## 5. Fase 9 — Optimización de esquema MongoDB ✅ COMPLETADA
 
 > Dependencias: Fase 8  
-> Objetivo: Optimizar el diseño de documentos según patrones MongoDB para reducir consultas y mejorar rendimiento.
+> Objetivo: Optimizar el diseño de documentos según patrones MongoDB para reducir consultas y mejorar rendimiento.  
+> **Estado:** COMPLETADA — Todas las tareas 9.1 a 9.10 están implementadas en `develop`.
 
-| #   | Tarea                                                              | Patrón            | Archivos involucrados      | Estimación |
-|-----|--------------------------------------------------------------------|-------------------|----------------------------|------------|
-| 9.1 | Agregar Extended Reference en `Animal` para `especie` (`{ _id, nombre }`) | Extended Reference | `models/Animal.js`, `services/animalService.js`, seed | 20 min |
-| 9.2 | Agregar Extended Reference en `Animal` para `raza` (`{ _id, nombre }`)     | Extended Reference | `models/Animal.js`, `services/animalService.js`, seed | 15 min |
-| 9.3 | Agregar Extended Reference en `Animal` para `propietario` (`{ _id, nombre, email }`) | Extended Reference | `models/Animal.js`, `services/animalService.js`, seed | 15 min |
-| 9.4 | Agregar campo computado `cantidadHijos` en `Animal` con `$inc`       | Computed          | `models/Animal.js`, `services/animalService.js` | 20 min |
-| 9.5 | Agregar campo computado `cantidadAnimales` en `Especie` y `Raza`    | Computed          | `models/Especie.js`, `models/Raza.js`, services | 20 min |
-| 9.6 | Sincronización: hook `post('save')` en `Especie` para actualizar nombres en `Animal` | Extended Reference | `models/Especie.js`, `services/animalService.js` | 15 min |
-| 9.7 | Sincronización: hook `post('save')` en `Raza` para actualizar nombres en `Animal` | Extended Reference | `models/Raza.js`, `services/animalService.js` | 15 min |
-| 9.8 | Migración: script para backfill de datos existentes                | —                 | `scripts/migrate-v2.js`    | 30 min |
-| 9.9 | Eliminar `populate` redundantes en `animalService` (especie, raza, propietario) | —                 | `services/animalService.js` | 10 min |
-| 9.10 | Agregar índices compuestos faltantes según queries de la app       | —                 | Modelos                   | 10 min |
+| #   | Tarea                                                              | Patrón            | Archivos involucrados      | Estado |
+|-----|--------------------------------------------------------------------|-------------------|----------------------------|--------|
+| 9.1 | Agregar Extended Reference en `Animal` para `especie` (`{ _id, nombre }`) | Extended Reference | `models/Animal.js`, `services/animalService.js`, seed | ✅ |
+| 9.2 | Agregar Extended Reference en `Animal` para `raza` (`{ _id, nombre }`)     | Extended Reference | `models/Animal.js`, `services/animalService.js`, seed | ✅ |
+| 9.3 | Agregar Extended Reference en `Animal` para `propietario` (`{ _id, nombre, email }`) | Extended Reference | `models/Animal.js`, `services/animalService.js`, seed | ✅ |
+| 9.4 | Agregar campo computado `cantidadHijos` en `Animal` con `$inc`       | Computed          | `models/Animal.js`, `services/animalService.js` | ✅ |
+| 9.5 | Agregar campo computado `cantidadAnimales` en `Especie` y `Raza`    | Computed          | `models/Especie.js`, `models/Raza.js`, services | ✅ |
+| 9.6 | Sincronización: hook `post('save')` en `Especie` para actualizar nombres en `Animal` | Extended Reference | `models/Especie.js`, `services/animalService.js` | ✅ |
+| 9.7 | Sincronización: hook `post('save')` en `Raza` para actualizar nombres en `Animal` | Extended Reference | `models/Raza.js`, `services/animalService.js` | ✅ |
+| 9.8 | Migración: script para backfill de datos existentes                | —                 | `scripts/migrate-v2.js`    | ✅ |
+| 9.9 | Eliminar `populate` redundantes en `animalService` (especie, raza, propietario) | —                 | `services/animalService.js` | ✅ |
+| 9.10 | Agregar índices compuestos faltantes según queries de la app       | —                 | Modelos                   | ✅ |
 
 **Total estimado:** 2h 50min
 
-### Detalle de cambios planeados
+### Detalle de cambios implementados
 
 ```javascript
 // models/Animal.js — después de Fase 9
@@ -486,7 +490,7 @@ if (payload.madre) {
 }
 ```
 
-### Efecto esperado
+### Efecto logrado
 
 | Consulta | Antes (populates) | Después (populates) | Mejora |
 |---|---|---|---|
@@ -503,3 +507,4 @@ if (payload.madre) {
 |---------|------------|------------------------|--------|
 | 1.0     | 2026-06-06 | Versión inicial                          | Doc Team |
 | 1.1     | 2026-06-19 | Agregada Fase 9 — Optimización MongoDB   | Doc Team |
+| 1.2     | 2026-06-27 | **Cierre definitivo de la Fase 9.** Se actualiza el documento reflejando la implementación real del patrón *Extended Reference* y *Computed*, el desuso de los hooks de Mongoose moviendo la lógica a servicios, y el cambio formal de las rutas de animales a inglés. | S. Ábrego |

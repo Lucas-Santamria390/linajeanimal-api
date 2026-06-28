@@ -1,3 +1,9 @@
+openapi: 3.0.3
+info:
+  title: LinajeAnimal - Módulo de Autenticación
+  version: 1.2.0
+  description: Especificación de endpoints de autenticación y gestión de sesiones.
+
 paths:
   /api/v1/auth/register:
     post:
@@ -7,25 +13,25 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                type: object
-                required: [nombre, email, password]
-                properties:
-                  nombre:
-                    type: string
-                    description: Nombre del usuario
-                  email:
-                    type: string
-                    format: email
-                    description: Correo electrónico del usuario
-                  password:
-                    type: string
-                    minLength: 6
-                    description: Contraseña (mínimo 6 caracteres)
-                  rol:
-                    type: string
-                    enum: [user, admin]
-                    description: Rol del usuario (se ignora, siempre se asigna 'user')
+            schema:
+              type: object
+              required: [nombre, email, password]
+              properties:
+                nombre:
+                  type: string
+                  description: Nombre del usuario
+                email:
+                  type: string
+                  format: email
+                  description: Correo electrónico del usuario
+                password:
+                  type: string
+                  minLength: 8
+                  description: Contraseña (mínimo 8 caracteres, debe incluir mayúscula, número y carácter especial)
+                rol:
+                  type: string
+                  enum: [user, admin]
+                  description: Rol del usuario (se ignora, siempre se asigna 'user')
       responses:
         201:
           description: Usuario creado exitosamente
@@ -61,39 +67,19 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: "El nombre es obligatorio"
+                $ref: '#/components/schemas/Error'
         409:
           description: El email ya está registrado
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: "El recurso ya existe (duplicado)"
+                $ref: '#/components/schemas/Error'
         429:
           description: Demasiadas solicitudes (rate limit)
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
+                $ref: '#/components/schemas/Error'
   /api/v1/auth/login:
     post:
       tags: [Auth]
@@ -146,38 +132,19 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
+                $ref: '#/components/schemas/Error'
         401:
           description: Credenciales inválidas
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: "Email o contraseña incorrectos"
+                $ref: '#/components/schemas/Error'
         429:
           description: Demasiadas solicitudes (rate limit)
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
+                $ref: '#/components/schemas/Error'
   /api/v1/auth/profile:
     get:
       tags: [Auth]
@@ -213,11 +180,95 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/auth/password:
+    put:
+      tags: [Auth]
+      summary: Actualizar contraseña del usuario autenticado
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [oldPassword, newPassword]
+              properties:
+                oldPassword:
+                  type: string
+                  description: Contraseña actual del usuario
+                newPassword:
+                  type: string
+                  minLength: 8
+                  description: Nueva contraseña (mínimo 8 caracteres, debe incluir mayúscula, número y carácter especial)
+      responses:
+        200:
+          description: Contraseña actualizada exitosamente
+          content:
+            application/json:
+              schema:
                 type: object
                 properties:
                   success:
                     type: boolean
-                    example: false
+                    example: true
                   message:
                     type: string
-                    example: "Acceso no autorizado"
+                    example: "Contraseña actualizada correctamente"
+        400:
+          description: Datos inválidos (error de validación o longitud)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autorizado o contraseña actual incorrecta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Cerrar sesión
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Sesión cerrada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Sesión cerrada correctamente"
+        401:
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string

@@ -1,14 +1,35 @@
+openapi: 3.0.3
+info:
+  title: LinajeAnimal - Módulo de Usuarios
+  version: 1.2.0
+  description: Especificación de endpoints para la gestión de usuarios (Exclusivo para Administradores).
+
 paths:
   /api/v1/usuarios:
     get:
       tags: [Usuarios]
-      summary: Listar todos los usuarios (admin)
-      description: Retorna todos los usuarios registrados, activos e inactivos. Solo accesible para administradores.
+      summary: Listar todos los usuarios (admin - Paginado)
+      description: Retorna todos los usuarios registrados con estructura de paginación. Solo accesible para administradores.
       security:
         - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Número de página
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Cantidad de registros por página
+          required: false
+          schema:
+            type: integer
+            default: 10
       responses:
         200:
-          description: Lista de usuarios
+          description: Listado paginado de usuarios obtenido exitosamente.
           content:
             application/json:
               schema:
@@ -21,22 +42,37 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Usuario'
+                  pagination:
+                    type: object
+                    properties:
+                      totalDocs:
+                        type: integer
+                        example: 25
+                      limit:
+                        type: integer
+                        example: 10
+                      page:
+                        type: integer
+                        example: 1
+                      totalPages:
+                        type: integer
+                        example: 3
+                      hasNextPage:
+                        type: boolean
+                        example: true
+                      hasPrevPage:
+                        type: boolean
+                        example: false
         401:
-          description: No autenticado (token inválido o ausente)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/401Unauthorized'
         403:
-          description: Sin permisos (rol no admin)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/403Forbidden'
+        500:
+          $ref: '#/components/responses/500InternalError'
     post:
       tags: [Usuarios]
       summary: Crear un usuario (admin)
-      description: Crea un nuevo usuario. A diferencia del registro público, permite asignar rol (admin/user). Solo accesible para administradores.
+      description: Crea un nuevo usuario. Permite asignar rol de manera directa. Solo accesible para administradores.
       security:
         - bearerAuth: []
       requestBody:
@@ -49,19 +85,21 @@ paths:
               properties:
                 nombre:
                   type: string
-                  description: Nombre del usuario
+                  example: "Carlos Mendoza"
                 email:
                   type: string
                   format: email
-                  description: Correo electrónico del usuario
+                  example: "carlos@linajeanimal.com"
                 password:
                   type: string
-                  minLength: 6
-                  description: Contraseña (mínimo 6 caracteres)
+                  minLength: 8
+                  description: Contraseña (Mínimo 8 caracteres tras actualización de seguridad)
+                  example: "AdminPass2026*"
                 rol:
                   type: string
                   enum: [admin, user]
-                  description: Rol del usuario (por defecto 'user')
+                  default: user
+                  example: "user"
       responses:
         201:
           description: Usuario creado exitosamente
@@ -76,23 +114,11 @@ paths:
                   data:
                     $ref: '#/components/schemas/Usuario'
         400:
-          description: Datos inválidos (error de validación)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/400BadRequest'
         401:
-          description: No autenticado (token inválido o ausente)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/401Unauthorized'
         403:
-          description: Sin permisos (rol no admin)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/403Forbidden'
         409:
           description: El email ya está registrado
           content:
@@ -112,10 +138,10 @@ paths:
           required: true
           schema:
             type: string
-          description: ID del usuario
+          description: ID único del usuario (ObjectId)
       responses:
         200:
-          description: Datos del usuario
+          description: Datos del usuario encontrados
           content:
             application/json:
               schema:
@@ -127,33 +153,17 @@ paths:
                   data:
                     $ref: '#/components/schemas/Usuario'
         400:
-          description: ID inválido
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/400BadRequest'
         401:
-          description: No autenticado (token inválido o ausente)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/401Unauthorized'
         403:
-          description: Sin permisos (rol no admin)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/403Forbidden'
         404:
-          description: Usuario no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/404NotFound'
     put:
       tags: [Usuarios]
       summary: Actualizar un usuario (admin)
-      description: Actualiza los datos de un usuario (nombre, email, rol). No permite cambiar la contraseña. Solo accesible para administradores.
+      description: Actualiza los datos de un usuario (nombre, email, rol). No permite modificar contraseña desde aquí. Solo accesible para administradores.
       security:
         - bearerAuth: []
       parameters:
@@ -172,15 +182,15 @@ paths:
               properties:
                 nombre:
                   type: string
-                  description: Nombre del usuario
+                  example: "Carlos Mendoza Modificado"
                 email:
                   type: string
                   format: email
-                  description: Correo electrónico del usuario
+                  example: "carlos.m@linajeanimal.com"
                 rol:
                   type: string
                   enum: [admin, user]
-                  description: Rol del usuario
+                  example: "admin"
       responses:
         200:
           description: Usuario actualizado exitosamente
@@ -195,33 +205,17 @@ paths:
                   data:
                     $ref: '#/components/schemas/Usuario'
         400:
-          description: Datos inválidos o ID inválido
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/400BadRequest'
         401:
-          description: No autenticado (token inválido o ausente)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/401Unauthorized'
         403:
-          description: Sin permisos (rol no admin)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/403Forbidden'
         404:
-          description: Usuario no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/404NotFound'
     delete:
       tags: [Usuarios]
-      summary: Desactivar un usuario (admin)
-      description: Realiza un soft delete del usuario, marcando su cuenta como inactiva. Solo accesible para administradores.
+      summary: Desactivar un usuario — Soft Delete (admin)
+      description: Realiza la desactivación lógica del usuario. No se puede desactivar el propio usuario logueado. Solo accesible para administradores.
       security:
         - bearerAuth: []
       parameters:
@@ -233,7 +227,7 @@ paths:
           description: ID del usuario a desactivar
       responses:
         200:
-          description: Usuario desactivado exitosamente
+          description: Usuario desactivado exitosamente (Soft Delete)
           content:
             application/json:
               schema:
@@ -245,33 +239,21 @@ paths:
                   data:
                     $ref: '#/components/schemas/Usuario'
         400:
-          description: No puedes desactivar tu propia cuenta o ID inválido
+          description: Intento de auto-desactivación o ID inválido
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         401:
-          description: No autenticado (token inválido o ausente)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/401Unauthorized'
         403:
-          description: Sin permisos (rol no admin)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/403Forbidden'
         404:
-          description: Usuario no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/404NotFound'
     patch:
       tags: [Usuarios]
-      summary: Activar o desactivar un usuario (admin)
-      description: Actualiza el estado activo de una cuenta. Solo accesible para administradores.
+      summary: Activar o desactivar estado de un usuario (admin)
+      description: Cambia explícitamente el campo active. Solo accesible para administradores.
       security:
         - bearerAuth: []
       parameters:
@@ -280,7 +262,7 @@ paths:
           required: true
           schema:
             type: string
-          description: ID del usuario a actualizar
+          description: ID del usuario
       requestBody:
         required: true
         content:
@@ -291,10 +273,11 @@ paths:
               properties:
                 active:
                   type: boolean
-                  description: true para activar, false para desactivar
+                  description: true para activar cuenta, false para desactivar
+                  example: true
       responses:
         200:
-          description: Estado del usuario actualizado exitosamente
+          description: Estado actualizado exitosamente
           content:
             application/json:
               schema:
@@ -306,60 +289,52 @@ paths:
                   data:
                     $ref: '#/components/schemas/Usuario'
         400:
-          description: Datos inválidos, ID inválido o no puedes desactivar tu propia cuenta
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/400BadRequest'
         401:
-          description: No autenticado (token inválido o ausente)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/401Unauthorized'
         403:
-          description: Sin permisos (rol no admin)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/403Forbidden'
         404:
-          description: Usuario no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/404NotFound'
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     Usuario:
       type: object
       properties:
         _id:
           type: string
-          description: ID del usuario
+          example: "649ab2c3e4b0c5123456789a"
         nombre:
           type: string
-          description: Nombre del usuario
+          example: "Alejandro Gómez"
         email:
           type: string
           format: email
-          description: Correo electrónico del usuario
+          example: "alejandro@linajeanimal.com"
         rol:
           type: string
           enum: [admin, user]
-          description: Rol del usuario
+          example: "user"
         active:
           type: boolean
-          description: Estado de la cuenta (activo/inactivo)
+          example: true
+        tokenVersion:
+          type: integer
+          example: 0
         createdAt:
           type: string
           format: date-time
-          description: Fecha de creación
+          example: "2026-06-10T08:22:11.000Z"
         updatedAt:
           type: string
           format: date-time
-          description: Fecha de última actualización
+          example: "2026-06-27T14:00:00.000Z"
     Error:
       type: object
       properties:
@@ -368,3 +343,35 @@ components:
           example: false
         message:
           type: string
+          example: "Descripción detallada del error controlado"
+  responses:
+    400BadRequest:
+      description: Solicitud incorrecta. Argumentos mal formados o fallas de validación.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    401Unauthorized:
+      description: No autenticado. Token ausente, corrupto o expirado.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    403Forbidden:
+      description: Acceso prohibido. Se requiere rol de Administrador.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    404NotFound:
+      description: El recurso solicitado no existe.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    500InternalError:
+      description: Error interno del servidor.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

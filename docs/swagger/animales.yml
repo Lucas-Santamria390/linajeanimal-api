@@ -1,3 +1,9 @@
+openapi: 3.0.3
+info:
+  title: LinajeAnimal - Módulo de Animales
+  version: 1.2.0
+  description: Especificación de endpoints para la gestión de animales con árbol genealógico.
+
 paths:
   /api/v1/animales:
     get:
@@ -58,7 +64,7 @@ paths:
                   data:
                     type: array
                     items:
-                      type: object
+                      $ref: '#/components/schemas/Animal'
                   pagination:
                     type: object
                     properties:
@@ -100,10 +106,10 @@ paths:
                   description: Nombre del animal
                 especie:
                   type: string
-                  description: ID de la especie
+                  description: ID de la especie (se transforma a objeto embebido en backend)
                 raza:
                   type: string
-                  description: ID de la raza
+                  description: ID de la raza (se transforma a objeto embebido en backend)
                 sexo:
                   type: string
                   enum: [macho, hembra]
@@ -147,7 +153,7 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    type: object
+                    $ref: '#/components/schemas/Animal'
         400:
           description: Datos invalidos (validacion)
           content:
@@ -197,7 +203,7 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    type: object
+                    $ref: '#/components/schemas/Animal'
         400:
           description: ID invalido
           content:
@@ -246,10 +252,10 @@ paths:
                   description: Nombre del animal
                 especie:
                   type: string
-                  description: ID de la especie
+                  description: ID de la especie (se transforma a objeto embebido en backend)
                 raza:
                   type: string
-                  description: ID de la raza
+                  description: ID de la raza (se transforma a objeto embebido en backend)
                 sexo:
                   type: string
                   enum: [macho, hembra]
@@ -285,7 +291,7 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    type: object
+                    $ref: '#/components/schemas/Animal'
         400:
           description: Datos invalidos (validacion)
           content:
@@ -340,7 +346,7 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    type: object
+                    $ref: '#/components/schemas/Animal'
         400:
           description: ID invalido
           content:
@@ -460,7 +466,7 @@ paths:
                   data:
                     type: array
                     items:
-                      type: object
+                      $ref: '#/components/schemas/Animal'
         400:
           description: ID invalido
           content:
@@ -512,7 +518,7 @@ paths:
                   data:
                     type: array
                     items:
-                      type: object
+                      $ref: '#/components/schemas/Animal'
         400:
           description: ID invalido
           content:
@@ -577,7 +583,7 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    type: object
+                    $ref: '#/components/schemas/Animal'
         400:
           description: Datos invalidos (validacion)
           content:
@@ -608,8 +614,151 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+    patch:
+      tags: [Animales]
+      summary: Asignar padres a un animal (alias PATCH)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID del animal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                padre:
+                  type: string
+                  nullable: true
+                  description: ID del padre (null para desasignar)
+                madre:
+                  type: string
+                  nullable: true
+                  description: ID de la madre (null para desasignar)
+      responses:
+        200:
+          description: Padres actualizados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Animal'
+        400:
+          description: Datos invalidos (validacion)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Sin permisos (no eres el propietario ni admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Animal no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
+    Animal:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre:
+          type: string
+        sexo:
+          type: string
+          enum: [macho, hembra]
+        fechaNacimiento:
+          type: string
+          format: date-time
+        peso:
+          type: number
+        color:
+          type: string
+        identificador:
+          type: string
+        fotoUrl:
+          type: string
+        notas:
+          type: string
+        active:
+          type: boolean
+        cantidadHijos:
+          type: integer
+        especie:
+          type: object
+          description: Referencia extendida de la especie
+          properties:
+            _id:
+              type: string
+            nombre:
+              type: string
+        raza:
+          type: object
+          description: Referencia extendida de la raza
+          properties:
+            _id:
+              type: string
+            nombre:
+              type: string
+        propietario:
+          type: object
+          description: Referencia extendida del usuario propietario
+          properties:
+            _id:
+              type: string
+            nombre:
+              type: string
+            email:
+              type: string
+        padre:
+          type: string
+          nullable: true
+          description: "ObjectId del padre (ref: Animal)"
+        madre:
+          type: string
+          nullable: true
+          description: "ObjectId de la madre (ref: Animal)"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     Error:
       type: object
       properties:
