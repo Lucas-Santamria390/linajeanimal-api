@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const request = require('supertest');
 const app = require('../app');
+const Usuario = require('../models/Usuario');
 const { conectarTestDB, desconectarTestDB, limpiarTestDB } = require('./db-helper');
 
 beforeAll(async () => {
@@ -81,12 +82,15 @@ describe('Tests de Usuarios CRUD + Activacion (API v1 Usuarios)', () => {
       expect(res.body).toHaveProperty('success', true);
       expect(Array.isArray(res.body.data)).toBe(true);
       expect(res.body.data.length).toBe(2);
+      const totalUsuarios = await Usuario.countDocuments();
+      const esperadoPages = Math.ceil(totalUsuarios / 2);
+
       expect(res.body.pagination).toEqual(
         expect.objectContaining({
           page: 2,
           limit: 2,
-          total: 4,
-          pages: 2,
+          total: totalUsuarios,
+          pages: esperadoPages,
         })
       );
     });
