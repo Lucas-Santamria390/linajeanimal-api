@@ -133,10 +133,17 @@ npm run dev
 
 ## Documentación interactiva
 
-La API cuenta con documentación Swagger disponible en:
+La API está desplegada en:
+
+```
+https://linajeanimal-api.onrender.com
+```
+
+Documentación Swagger disponible en:
 
 ```
 http://localhost:3000/api/v1/docs
+https://linajeanimal-api.onrender.com/api/v1/docs
 ```
 
 ## Comandos disponibles
