@@ -1,9 +1,3 @@
-openapi: 3.0.3
-info:
-  title: LinajeAnimal - Módulo de Usuarios
-  version: 1.2.0
-  description: Especificación de endpoints para la gestión de usuarios (Exclusivo para Administradores).
-
 paths:
   /api/v1/usuarios:
     get:
@@ -298,11 +292,6 @@ paths:
           $ref: '#/components/responses/404NotFound'
 
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
   schemas:
     Usuario:
       type: object

@@ -1,9 +1,3 @@
-openapi: 3.0.3
-info:
-  title: LinajeAnimal - Módulo de Animales
-  version: 1.2.0
-  description: Especificación de endpoints para la gestión de animales con árbol genealógico.
-
 paths:
   /api/v1/animales:
     get:
@@ -616,11 +610,6 @@ paths:
                 $ref: '#/components/schemas/Error'
 
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
   schemas:
     Animal:
       type: object

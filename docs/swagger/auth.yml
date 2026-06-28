@@ -1,9 +1,3 @@
-openapi: 3.0.3
-info:
-  title: LinajeAnimal - Módulo de Autenticación
-  version: 1.2.0
-  description: Especificación de endpoints de autenticación y gestión de sesiones.
-
 paths:
   /api/v1/auth/register:
     post:
@@ -258,11 +252,6 @@ paths:
                 $ref: '#/components/schemas/Error'
 
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
   schemas:
     Error:
       type: object
