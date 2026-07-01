@@ -56,6 +56,7 @@ describe('Tests de Animales CRUD + Genealogía (API v1 Animales)', () => {
       .set('Authorization', `Bearer ${tokenAdmin}`)
       .send({
         nombre: datos.nombre,
+        identificador: datos.identificador,
         sexo: datos.sexo,
         especie: especieId,
         raza: razaId,
@@ -90,25 +91,25 @@ describe('Tests de Animales CRUD + Genealogía (API v1 Animales)', () => {
 
     await crearEspecieYRaza(tokenAdmin);
 
-    const padreRes = await crearAnimalViaAPI({ nombre: 'Toro Zeus', sexo: 'macho' });
+    const padreRes = await crearAnimalViaAPI({ nombre: 'Toro Zeus', sexo: 'macho', identificador: 'TEST-PADRE' });
     idPadre = padreRes.body.data._id;
 
-    const madreRes = await crearAnimalViaAPI({ nombre: 'Vaca Hera', sexo: 'hembra' });
+    const madreRes = await crearAnimalViaAPI({ nombre: 'Vaca Hera', sexo: 'hembra', identificador: 'TEST-MADRE' });
     idMadre = madreRes.body.data._id;
 
     const principalRes = await crearAnimalViaAPI({
-      nombre: 'Becerro Hercules', sexo: 'macho',
+      nombre: 'Becerro Hercules', sexo: 'macho', identificador: 'TEST-HERCULES',
       padre: idPadre, madre: idMadre
     });
     idAnimalPrincipal = principalRes.body.data._id;
 
     const hermanoRes = await crearAnimalViaAPI({
-      nombre: 'Becerra Atenea', sexo: 'hembra',
+      nombre: 'Becerra Atenea', sexo: 'hembra', identificador: 'TEST-ATENEA',
       padre: idPadre, madre: idMadre
     });
     idHermano = hermanoRes.body.data._id;
 
-    const nuevoPadreRes = await crearAnimalViaAPI({ nombre: 'Toro Poseidon', sexo: 'macho' });
+    const nuevoPadreRes = await crearAnimalViaAPI({ nombre: 'Toro Poseidon', sexo: 'macho', identificador: 'TEST-POSEIDON' });
     idNuevoPadre = nuevoPadreRes.body.data._id;
   });
 
@@ -161,9 +162,25 @@ describe('Tests de Animales CRUD + Genealogía (API v1 Animales)', () => {
         .post('/api/v1/animales')
         .set('Authorization', `Bearer ${tokenAdmin}`)
         .send({
-          nombre: 'Invalido', sexo: 'X', especie: especieId, raza: razaId, fechaNacimiento: '2023-01-15'
+          nombre: 'Invalido', identificador: 'TEST-INVALIDO', sexo: 'X', especie: especieId, raza: razaId, fechaNacimiento: '2023-01-15'
         });
       expect(res.statusCode).toEqual(400);
+    });
+
+    it('Debería crear un animal sin nombre pero con identificador (201)', async () => {
+      const res = await request(app)
+        .post('/api/v1/animales')
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .send({
+          identificador: 'TEST-SINNOMBRE',
+          sexo: 'hembra',
+          especie: especieId,
+          raza: razaId,
+          fechaNacimiento: '2023-06-01',
+        });
+      expect(res.statusCode).toEqual(201);
+      expect(res.body).toHaveProperty('success', true);
+      expect(res.body.data.identificador).toEqual('TEST-SINNOMBRE');
     });
   });
 

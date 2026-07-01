@@ -1,8 +1,8 @@
 # Modelo de Datos — LinajeAnimal
 
-> **Versión:** 1.2  
+> **Versión:** 1.3  
 > **Proyecto:** LinajeAnimal — API REST para gestión de árbol genealógico de animales  
-> **Fecha:** Junio 2026
+> **Fecha:** Julio 2026
 
 ---
 
@@ -150,14 +150,14 @@ genealógica y de identificación.
 | Campo            | Tipo         | Requerido | Único | Default       | Descripción                                           |
 |------------------|--------------|-----------|-------|---------------|-------------------------------------------------------|
 | `_id`            | ObjectId     | Auto      | Sí    | Auto          | Identificador único                                   |
-| `nombre`         | String       | Sí        | No    | —             | Nombre del animal                                     |
+| `nombre`         | String       | No        | No    | —             | Nombre del animal (opcional)                          |
 | `especie`        | Objeto       | Sí        | No    | —             | Extended Reference `{ _id, nombre }` a Especie        |
 | `raza`           | Objeto       | Sí        | No    | —             | Extended Reference `{ _id, nombre }` a Raza           |
 | `sexo`           | String       | Sí        | No    | —             | Enum: `'macho'` o `'hembra'`                          |
 | `fechaNacimiento`| Date         | Sí        | No    | —             | Fecha de nacimiento                                   |
 | `peso`           | Number       | No        | No    | —             | Peso en kg                                            |
 | `color`          | String       | No        | No    | —             | Color o marcas distintivas                            |
-| `identificador`  | String       | No        | Sí*   | —             | Número de microchip, tatuaje o registro (unique sparse)|
+| `identificador`  | String       | Sí        | Sí    | —             | Código único del animal (arete, microchip, tatuaje, etc.)|
 | `fotoUrl`        | String       | No        | No    | —             | URL de la foto del animal                             |
 | `notas`          | String       | No        | No    | —             | Observaciones adicionales                             |
 | `padre`          | ObjectId     | No        | No    | `null`        | Ref. a Animal (padre) — debe ser macho                |
@@ -175,7 +175,7 @@ genealógica y de identificación.
 - `{ padre: 1 }` — para buscar hijos de un padre
 - `{ madre: 1 }` — para buscar hijos de una madre
 - `{ propietario: 1 }` — para filtrar por propietario
-- `{ identificador: 1 }` — único con sparse (permite múltiples nulls)
+- `{ identificador: 1 }` — único
 - `{ active: 1 }` — para filtrar solo activos
 
 **Ejemplo del documento:**
@@ -321,3 +321,4 @@ Esto permite reducir `.populate()` de 5 a 2 (solo `padre`/`madre` son ObjectId s
 |---------|------------|------------------------|--------|
 | 1.0     | 2026-06-06 | Versión inicial        | Doc Team |
 | 1.2     | 2026-06-27 | Actualizados esquemas de Animal con Extended Reference (`especie`, `raza`, `propietario` como objetos embebidos); agregado campo `cantidadHijos`; actualizado password mínimo a 8 caracteres. | Doc Team |
+| 1.3     | 2026-07-01 | `identificador` pasa a requerido (único, sin sparse); `nombre` pasa a opcional. Ordenamientos y búsquedas ahora usan `identificador`. | Doc Team |
