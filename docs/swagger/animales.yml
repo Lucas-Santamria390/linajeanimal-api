@@ -41,7 +41,7 @@ paths:
           name: propietario
           schema:
             type: string
-          description: Filtra por ID de propietario
+          description: Filtra por ID de propietario (admin puede ver todos; usuario regular solo ve sus animales)
         - in: query
           name: page
           schema:
@@ -216,6 +216,12 @@ paths:
                 $ref: '#/components/schemas/Error'
         401:
           description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Sin permisos (no eres el propietario ni admin)
           content:
             application/json:
               schema:
@@ -431,6 +437,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        403:
+          description: Sin permisos (no eres el propietario ni admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         404:
           description: Animal no encontrado
           content:
@@ -483,6 +495,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        403:
+          description: Sin permisos (no eres el propietario ni admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         404:
           description: Animal no encontrado
           content:
@@ -531,6 +549,12 @@ paths:
                 $ref: '#/components/schemas/Error'
         401:
           description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Sin permisos (no eres el propietario ni admin)
           content:
             application/json:
               schema:

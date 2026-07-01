@@ -330,4 +330,83 @@ describe('Tests de Animales CRUD + Genealogía (API v1 Animales)', () => {
       expect(res.statusCode).toEqual(404);
     });
   });
+
+  describe('Acceso por Propietario', () => {
+    let idAnimalRegular;
+    let idPropietarioRegular;
+
+    beforeAll(async () => {
+      const loginRegular = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: usuarioRegularPrueba.email, password: usuarioRegularPrueba.password });
+      idPropietarioRegular = loginRegular.body.data.usuario?._id || loginRegular.body.data._id;
+
+      const res = await request(app)
+        .post('/api/v1/animales')
+        .set('Authorization', `Bearer ${tokenRegular}`)
+        .send({
+          identificador: 'TEST-REGULAR',
+          sexo: 'hembra',
+          especie: especieId,
+          raza: razaId,
+          fechaNacimiento: '2023-01-01',
+          nombre: 'Vaca del usuario regular',
+        });
+      idAnimalRegular = res.body.data._id;
+    });
+
+    it('Admin deberia ver todos los animales (200)', async () => {
+      const res = await request(app)
+        .get('/api/v1/animales')
+        .set('Authorization', `Bearer ${tokenAdmin}`);
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('Usuario regular solo deberia ver sus propios animales (200)', async () => {
+      const res = await request(app)
+        .get('/api/v1/animales')
+        .set('Authorization', `Bearer ${tokenRegular}`);
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.data.length).toBe(1);
+      expect(res.body.data[0].identificador).toEqual('TEST-REGULAR');
+      expect(res.body.data[0].propietario._id.toString()).toEqual(idPropietarioRegular.toString());
+    });
+
+    it('Usuario regular NO deberia ver un animal de otro propietario por ID (403)', async () => {
+      const res = await request(app)
+        .get(`/api/v1/animales/${idPadre}`)
+        .set('Authorization', `Bearer ${tokenRegular}`);
+      expect(res.statusCode).toEqual(403);
+    });
+
+    it('Usuario regular NO deberia acceder al arbol genealogico de otro propietario (403)', async () => {
+      const res = await request(app)
+        .get(`/api/v1/animales/${idPadre}/family-tree`)
+        .set('Authorization', `Bearer ${tokenRegular}`);
+      expect(res.statusCode).toEqual(403);
+    });
+
+    it('Usuario regular NO deberia ver hijos de un animal ajeno (403)', async () => {
+      const res = await request(app)
+        .get(`/api/v1/animales/${idPadre}/children`)
+        .set('Authorization', `Bearer ${tokenRegular}`);
+      expect(res.statusCode).toEqual(403);
+    });
+
+    it('Usuario regular NO deberia ver hermanos de un animal ajeno (403)', async () => {
+      const res = await request(app)
+        .get(`/api/v1/animales/${idPadre}/siblings`)
+        .set('Authorization', `Bearer ${tokenRegular}`);
+      expect(res.statusCode).toEqual(403);
+    });
+
+    it('Usuario regular deberia ver su propio animal por ID (200)', async () => {
+      const res = await request(app)
+        .get(`/api/v1/animales/${idAnimalRegular}`)
+        .set('Authorization', `Bearer ${tokenRegular}`);
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.data.identificador).toEqual('TEST-REGULAR');
+    });
+  });
 });

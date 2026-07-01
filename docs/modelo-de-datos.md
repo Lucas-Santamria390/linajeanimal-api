@@ -157,7 +157,7 @@ genealógica y de identificación.
 | `fechaNacimiento`| Date         | Sí        | No    | —             | Fecha de nacimiento                                   |
 | `peso`           | Number       | No        | No    | —             | Peso en kg                                            |
 | `color`          | String       | No        | No    | —             | Color o marcas distintivas                            |
-| `identificador`  | String       | Sí        | Sí    | —             | Código único del animal (arete, microchip, tatuaje, etc.)|
+| `identificador`  | String       | Sí        | Sí*   | —             | Código único del animal (arete, microchip, etc.) — único por propietario|
 | `fotoUrl`        | String       | No        | No    | —             | URL de la foto del animal                             |
 | `notas`          | String       | No        | No    | —             | Observaciones adicionales                             |
 | `padre`          | ObjectId     | No        | No    | `null`        | Ref. a Animal (padre) — debe ser macho                |
@@ -175,8 +175,10 @@ genealógica y de identificación.
 - `{ padre: 1 }` — para buscar hijos de un padre
 - `{ madre: 1 }` — para buscar hijos de una madre
 - `{ propietario: 1 }` — para filtrar por propietario
-- `{ identificador: 1 }` — único
+- `{ identificador: 1, propietario._id: 1 }` — compuesto único (un identificador no se repite dentro del mismo propietario)
 - `{ active: 1 }` — para filtrar solo activos
+
+> **Nota de unicidad:** El campo `identificador` es único en combinación con `propietario._id`. Esto permite que diferentes propietarios tengan animales con el mismo identificador (ej. dos fincas distintas pueden tener un "BOV-0001").
 
 **Ejemplo del documento:**
 ```json
