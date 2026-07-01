@@ -64,7 +64,7 @@ const populateAnimalRelations = (query) => {
     .populate('madre', 'identificador nombre sexo especie raza fechaNacimiento active');
 };
 
-const getActiveAnimalOrThrow = async (id) => {
+const getActiveAnimalOrThrow = async (id, usuario) => {
   if (!isValidId(id)) {
     throw createError('ID invalido', 400);
   }
@@ -72,6 +72,10 @@ const getActiveAnimalOrThrow = async (id) => {
   const animal = await populateAnimalRelations(Animal.findById(id));
   if (!animal || !animal.active) {
     throw createError('Animal no encontrado', 404);
+  }
+
+  if (usuario) {
+    assertCanReadAnimal(animal, usuario);
   }
 
   return animal;
@@ -85,6 +89,17 @@ const assertCanManageAnimal = (animal, usuario) => {
   const propietarioId = animal.propietario._id || animal.propietario;
   if (!usuario || toId(propietarioId) !== toId(usuario._id)) {
     throw createError('No tienes permisos para realizar esta accion', 403);
+  }
+};
+
+const assertCanReadAnimal = (animal, usuario) => {
+  if (!usuario || usuario.rol === 'admin') {
+    return;
+  }
+
+  const propietarioId = animal.propietario._id || animal.propietario;
+  if (toId(propietarioId) !== toId(usuario._id)) {
+    throw createError('No tienes permisos para ver este animal', 403);
   }
 };
 
@@ -242,11 +257,15 @@ const normalizeUpdatePayload = (data) => {
   return payload;
 };
 
-const list = async (query = {}) => {
+const list = async (query = {}, usuario) => {
   const filters = {};
 
   const active = parseBooleanQuery(query.active);
   filters.active = active === undefined ? true : active;
+
+  if (usuario && usuario.rol !== 'admin') {
+    filters['propietario._id'] = usuario._id;
+  }
 
   if (query.nombre) {
     filters.nombre = { $regex: escapeRegex(String(query.nombre).trim()), $options: 'i' };
@@ -281,7 +300,9 @@ const list = async (query = {}) => {
     if (!isValidId(query.propietario)) {
       throw createError('El propietario no es valido');
     }
-    filters['propietario._id'] = query.propietario;
+    if (!usuario || usuario.rol === 'admin') {
+      filters['propietario._id'] = query.propietario;
+    }
   }
 
   const page = Math.max(Number.parseInt(query.page, 10) || 1, 1);
@@ -378,8 +399,8 @@ const create = async (data, usuarioId) => {
   return getById(animal._id);
 };
 
-const getById = async (id) => {
-  return getActiveAnimalOrThrow(id);
+const getById = async (id, usuario) => {
+  return getActiveAnimalOrThrow(id, usuario);
 };
 
 const update = async (id, data, usuario) => {
@@ -463,9 +484,9 @@ const deactivate = async (id, usuario) => {
   return { ...animal.toObject(), active: false };
 };
 
-const getTree = async (id, generations = DEFAULT_TREE_DEPTH) => {
+const getTree = async (id, generations = DEFAULT_TREE_DEPTH, usuario) => {
   const maxDepth = parseDepth(generations);
-  const animal = await getActiveAnimalOrThrow(id);
+  const animal = await getActiveAnimalOrThrow(id, usuario);
   const tree = await buildTreeNode(animal._id, maxDepth);
   return {
     generaciones: maxDepth,
@@ -473,8 +494,8 @@ const getTree = async (id, generations = DEFAULT_TREE_DEPTH) => {
   };
 };
 
-const getChildren = async (id) => {
-  await getActiveAnimalOrThrow(id);
+const getChildren = async (id, usuario) => {
+  await getActiveAnimalOrThrow(id, usuario);
 
   return populateAnimalRelations(
     Animal.find({
@@ -484,8 +505,8 @@ const getChildren = async (id) => {
   );
 };
 
-const getSiblings = async (id) => {
-  const animal = await getActiveAnimalOrThrow(id);
+const getSiblings = async (id, usuario) => {
+  const animal = await getActiveAnimalOrThrow(id, usuario);
 
   if (!animal.padre && !animal.madre) {
     return [];

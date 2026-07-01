@@ -35,7 +35,6 @@ const animalSchema = new mongoose.Schema({
   identificador: {
     type: String,
     required: [true, 'El identificador es obligatorio'],
-    unique: true,
     trim: true,
   },
   fotoUrl: {
@@ -79,6 +78,7 @@ animalSchema.index({ sexo: 1 });
 animalSchema.index({ padre: 1 });
 animalSchema.index({ madre: 1 });
 animalSchema.index({ 'propietario._id': 1, active: 1 });
+animalSchema.index({ identificador: 1, 'propietario._id': 1 }, { unique: true });
 animalSchema.index({ active: 1 });
 
 module.exports = mongoose.model('Animal', animalSchema);
