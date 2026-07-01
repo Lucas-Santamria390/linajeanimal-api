@@ -2,7 +2,7 @@ const animalService = require('../services/animalService');
 
 const list = async (req, res, next) => {
   try {
-    const result = await animalService.list(req.query);
+    const result = await animalService.list(req.query, req.usuario);
     res.json({ success: true, data: result.data, pagination: result.pagination });
   } catch (err) {
     next(err);
@@ -20,7 +20,7 @@ const create = async (req, res, next) => {
 
 const getById = async (req, res, next) => {
   try {
-    const animal = await animalService.getById(req.params.id);
+    const animal = await animalService.getById(req.params.id, req.usuario);
     res.json({ success: true, data: animal });
   } catch (err) {
     next(err);
@@ -48,7 +48,7 @@ const deactivate = async (req, res, next) => {
 const tree = async (req, res, next) => {
   try {
     const generations = req.query.generaciones || req.query.depth;
-    const animal = await animalService.getTree(req.params.id, generations);
+    const animal = await animalService.getTree(req.params.id, generations, req.usuario);
     res.json({ success: true, data: animal });
   } catch (err) {
     next(err);
@@ -57,7 +57,7 @@ const tree = async (req, res, next) => {
 
 const children = async (req, res, next) => {
   try {
-    const animals = await animalService.getChildren(req.params.id);
+    const animals = await animalService.getChildren(req.params.id, req.usuario);
     res.json({ success: true, data: animals });
   } catch (err) {
     next(err);
@@ -66,7 +66,7 @@ const children = async (req, res, next) => {
 
 const siblings = async (req, res, next) => {
   try {
-    const animals = await animalService.getSiblings(req.params.id);
+    const animals = await animalService.getSiblings(req.params.id, req.usuario);
     res.json({ success: true, data: animals });
   } catch (err) {
     next(err);

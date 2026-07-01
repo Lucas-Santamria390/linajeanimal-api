@@ -56,6 +56,7 @@ describe('Tests de Animales CRUD + Genealogía (API v1 Animales)', () => {
       .set('Authorization', `Bearer ${tokenAdmin}`)
       .send({
         nombre: datos.nombre,
+        identificador: datos.identificador,
         sexo: datos.sexo,
         especie: especieId,
         raza: razaId,
@@ -90,25 +91,25 @@ describe('Tests de Animales CRUD + Genealogía (API v1 Animales)', () => {
 
     await crearEspecieYRaza(tokenAdmin);
 
-    const padreRes = await crearAnimalViaAPI({ nombre: 'Toro Zeus', sexo: 'macho' });
+    const padreRes = await crearAnimalViaAPI({ nombre: 'Toro Zeus', sexo: 'macho', identificador: 'TEST-PADRE' });
     idPadre = padreRes.body.data._id;
 
-    const madreRes = await crearAnimalViaAPI({ nombre: 'Vaca Hera', sexo: 'hembra' });
+    const madreRes = await crearAnimalViaAPI({ nombre: 'Vaca Hera', sexo: 'hembra', identificador: 'TEST-MADRE' });
     idMadre = madreRes.body.data._id;
 
     const principalRes = await crearAnimalViaAPI({
-      nombre: 'Becerro Hercules', sexo: 'macho',
+      nombre: 'Becerro Hercules', sexo: 'macho', identificador: 'TEST-HERCULES',
       padre: idPadre, madre: idMadre
     });
     idAnimalPrincipal = principalRes.body.data._id;
 
     const hermanoRes = await crearAnimalViaAPI({
-      nombre: 'Becerra Atenea', sexo: 'hembra',
+      nombre: 'Becerra Atenea', sexo: 'hembra', identificador: 'TEST-ATENEA',
       padre: idPadre, madre: idMadre
     });
     idHermano = hermanoRes.body.data._id;
 
-    const nuevoPadreRes = await crearAnimalViaAPI({ nombre: 'Toro Poseidon', sexo: 'macho' });
+    const nuevoPadreRes = await crearAnimalViaAPI({ nombre: 'Toro Poseidon', sexo: 'macho', identificador: 'TEST-POSEIDON' });
     idNuevoPadre = nuevoPadreRes.body.data._id;
   });
 
@@ -161,9 +162,25 @@ describe('Tests de Animales CRUD + Genealogía (API v1 Animales)', () => {
         .post('/api/v1/animales')
         .set('Authorization', `Bearer ${tokenAdmin}`)
         .send({
-          nombre: 'Invalido', sexo: 'X', especie: especieId, raza: razaId, fechaNacimiento: '2023-01-15'
+          nombre: 'Invalido', identificador: 'TEST-INVALIDO', sexo: 'X', especie: especieId, raza: razaId, fechaNacimiento: '2023-01-15'
         });
       expect(res.statusCode).toEqual(400);
+    });
+
+    it('Debería crear un animal sin nombre pero con identificador (201)', async () => {
+      const res = await request(app)
+        .post('/api/v1/animales')
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .send({
+          identificador: 'TEST-SINNOMBRE',
+          sexo: 'hembra',
+          especie: especieId,
+          raza: razaId,
+          fechaNacimiento: '2023-06-01',
+        });
+      expect(res.statusCode).toEqual(201);
+      expect(res.body).toHaveProperty('success', true);
+      expect(res.body.data.identificador).toEqual('TEST-SINNOMBRE');
     });
   });
 
@@ -311,6 +328,85 @@ describe('Tests de Animales CRUD + Genealogía (API v1 Animales)', () => {
         .get(`/api/v1/animales/${idAnimalPrincipal}`)
         .set('Authorization', `Bearer ${tokenAdmin}`);
       expect(res.statusCode).toEqual(404);
+    });
+  });
+
+  describe('Acceso por Propietario', () => {
+    let idAnimalRegular;
+    let idPropietarioRegular;
+
+    beforeAll(async () => {
+      const loginRegular = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: usuarioRegularPrueba.email, password: usuarioRegularPrueba.password });
+      idPropietarioRegular = loginRegular.body.data.usuario?._id || loginRegular.body.data._id;
+
+      const res = await request(app)
+        .post('/api/v1/animales')
+        .set('Authorization', `Bearer ${tokenRegular}`)
+        .send({
+          identificador: 'TEST-REGULAR',
+          sexo: 'hembra',
+          especie: especieId,
+          raza: razaId,
+          fechaNacimiento: '2023-01-01',
+          nombre: 'Vaca del usuario regular',
+        });
+      idAnimalRegular = res.body.data._id;
+    });
+
+    it('Admin deberia ver todos los animales (200)', async () => {
+      const res = await request(app)
+        .get('/api/v1/animales')
+        .set('Authorization', `Bearer ${tokenAdmin}`);
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('Usuario regular solo deberia ver sus propios animales (200)', async () => {
+      const res = await request(app)
+        .get('/api/v1/animales')
+        .set('Authorization', `Bearer ${tokenRegular}`);
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.data.length).toBe(1);
+      expect(res.body.data[0].identificador).toEqual('TEST-REGULAR');
+      expect(res.body.data[0].propietario._id.toString()).toEqual(idPropietarioRegular.toString());
+    });
+
+    it('Usuario regular NO deberia ver un animal de otro propietario por ID (403)', async () => {
+      const res = await request(app)
+        .get(`/api/v1/animales/${idPadre}`)
+        .set('Authorization', `Bearer ${tokenRegular}`);
+      expect(res.statusCode).toEqual(403);
+    });
+
+    it('Usuario regular NO deberia acceder al arbol genealogico de otro propietario (403)', async () => {
+      const res = await request(app)
+        .get(`/api/v1/animales/${idPadre}/family-tree`)
+        .set('Authorization', `Bearer ${tokenRegular}`);
+      expect(res.statusCode).toEqual(403);
+    });
+
+    it('Usuario regular NO deberia ver hijos de un animal ajeno (403)', async () => {
+      const res = await request(app)
+        .get(`/api/v1/animales/${idPadre}/children`)
+        .set('Authorization', `Bearer ${tokenRegular}`);
+      expect(res.statusCode).toEqual(403);
+    });
+
+    it('Usuario regular NO deberia ver hermanos de un animal ajeno (403)', async () => {
+      const res = await request(app)
+        .get(`/api/v1/animales/${idPadre}/siblings`)
+        .set('Authorization', `Bearer ${tokenRegular}`);
+      expect(res.statusCode).toEqual(403);
+    });
+
+    it('Usuario regular deberia ver su propio animal por ID (200)', async () => {
+      const res = await request(app)
+        .get(`/api/v1/animales/${idAnimalRegular}`)
+        .set('Authorization', `Bearer ${tokenRegular}`);
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.data.identificador).toEqual('TEST-REGULAR');
     });
   });
 });
