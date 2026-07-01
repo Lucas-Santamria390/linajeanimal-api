@@ -60,8 +60,8 @@ const assertValidDate = (value) => {
 
 const populateAnimalRelations = (query) => {
   return query
-    .populate('padre', 'nombre sexo especie raza fechaNacimiento active')
-    .populate('madre', 'nombre sexo especie raza fechaNacimiento active');
+    .populate('padre', 'identificador nombre sexo especie raza fechaNacimiento active')
+    .populate('madre', 'identificador nombre sexo especie raza fechaNacimiento active');
 };
 
 const getActiveAnimalOrThrow = async (id) => {
@@ -201,6 +201,7 @@ const buildTreeNode = async (animalId, maxDepth, currentDepth = 0, visited = new
 
   return {
     _id: animal._id,
+    identificador: animal.identificador,
     nombre: animal.nombre,
     sexo: animal.sexo,
     fechaNacimiento: animal.fechaNacimiento,
@@ -225,11 +226,11 @@ const normalizeUpdatePayload = (data) => {
   if (payload.nombre !== undefined) {
     payload.nombre = String(payload.nombre).trim();
   }
-  if (payload.color !== undefined) {
-    payload.color = String(payload.color).trim();
-  }
   if (payload.identificador !== undefined) {
     payload.identificador = String(payload.identificador).trim();
+  }
+  if (payload.color !== undefined) {
+    payload.color = String(payload.color).trim();
   }
   if (payload.fotoUrl !== undefined) {
     payload.fotoUrl = String(payload.fotoUrl).trim();
@@ -249,6 +250,10 @@ const list = async (query = {}) => {
 
   if (query.nombre) {
     filters.nombre = { $regex: escapeRegex(String(query.nombre).trim()), $options: 'i' };
+  }
+
+  if (query.identificador) {
+    filters.identificador = { $regex: escapeRegex(String(query.identificador).trim()), $options: 'i' };
   }
 
   if (query.especie) {
@@ -287,7 +292,8 @@ const list = async (query = {}) => {
     Animal.countDocuments(filters),
     populateAnimalRelations(
       Animal.find(filters)
-        .sort({ createdAt: -1 })
+        .collation({ locale: 'es' })
+        .sort({ identificador: 1 })
         .skip(skip)
         .limit(limit)
     ),
@@ -314,7 +320,6 @@ const create = async (data, usuarioId) => {
   }
 
   const payload = {
-    nombre: String(data.nombre).trim(),
     especie: { _id: especie._id, nombre: especie.nombre },
     raza: { _id: raza._id, nombre: raza.nombre },
     sexo: data.sexo,
@@ -322,15 +327,17 @@ const create = async (data, usuarioId) => {
     propietario: { _id: propietario._id, nombre: propietario.nombre, email: propietario.email },
   };
 
+  if (data.nombre !== undefined) {
+    payload.nombre = String(data.nombre).trim();
+  }
+
   if (data.peso !== undefined) {
     payload.peso = data.peso;
   }
   if (data.color !== undefined) {
     payload.color = String(data.color).trim();
   }
-  if (data.identificador !== undefined) {
-    payload.identificador = String(data.identificador).trim();
-  }
+  payload.identificador = String(data.identificador).trim();
   if (data.fotoUrl !== undefined) {
     payload.fotoUrl = String(data.fotoUrl).trim();
   }
@@ -439,12 +446,14 @@ const update = async (id, data, usuario) => {
 };
 
 const deactivate = async (id, usuario) => {
-  const animal = await Animal.findByIdAndUpdate(id, { active: false });
+  const animal = await Animal.findById(id);
   if (!animal || !animal.active) {
     throw createError('Animal no encontrado', 404);
   }
 
   assertCanManageAnimal(animal, usuario);
+
+  await Animal.findByIdAndUpdate(id, { active: false });
 
   const especieId = animal.especie._id || animal.especie;
   const razaId = animal.raza._id || animal.raza;
@@ -471,7 +480,7 @@ const getChildren = async (id) => {
     Animal.find({
       active: true,
       $or: [{ padre: id }, { madre: id }],
-    }).sort({ nombre: 1 })
+    }).collation({ locale: 'es' }).sort({ identificador: 1 })
   );
 };
 
@@ -501,7 +510,7 @@ const getSiblings = async (id) => {
   }
 
   return populateAnimalRelations(
-    Animal.find(query).sort({ nombre: 1 })
+    Animal.find(query).collation({ locale: 'es' }).sort({ identificador: 1 })
   );
 };
 

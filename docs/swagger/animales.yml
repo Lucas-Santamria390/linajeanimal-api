@@ -28,6 +28,16 @@ paths:
             enum: [macho, hembra]
           description: Filtra por sexo
         - in: query
+          name: identificador
+          schema:
+            type: string
+          description: Filtra por identificador (busqueda parcial)
+        - in: query
+          name: active
+          schema:
+            type: boolean
+          description: "Filtra por estado activo/inactivo (default: solo activos)"
+        - in: query
           name: propietario
           schema:
             type: string
@@ -93,11 +103,14 @@ paths:
           application/json:
             schema:
               type: object
-              required: [nombre, especie, raza, sexo, fechaNacimiento]
+              required: [identificador, especie, raza, sexo, fechaNacimiento]
               properties:
                 nombre:
                   type: string
-                  description: Nombre del animal
+                  description: Nombre del animal (opcional)
+                identificador:
+                  type: string
+                  description: Identificador unico del animal (arete, microchip, etc.)
                 especie:
                   type: string
                   description: ID de la especie (se transforma a objeto embebido en backend)
@@ -118,9 +131,6 @@ paths:
                 color:
                   type: string
                   description: Color del animal
-                identificador:
-                  type: string
-                  description: Identificador unico
                 fotoUrl:
                   type: string
                   description: URL de la foto

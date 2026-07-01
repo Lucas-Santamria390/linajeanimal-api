@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const animalSchema = new mongoose.Schema({
   nombre: {
     type: String,
-    required: [true, 'El nombre del animal es obligatorio'],
     trim: true,
   },
   especie: {
@@ -35,8 +34,8 @@ const animalSchema = new mongoose.Schema({
   },
   identificador: {
     type: String,
+    required: [true, 'El identificador es obligatorio'],
     unique: true,
-    sparse: true,
     trim: true,
   },
   fotoUrl: {
