@@ -4,8 +4,10 @@ const { logSecurityEvent, EventTypes } = require('../middleware/securityLogger')
 
 const list = async (query = {}) => {
   const filters = {};
-  filters.active = query.active !== undefined ? query.active : true;
-
+  // Si mandan 'true' o 'false', lo convierte a booleano y filtra.
+  if (query.active !== undefined) {
+    filters.active = query.active === 'true' || query.active === true;
+  }
   const page = Math.max(Number.parseInt(query.page, 10) || 1, 1);
   const limit = Math.min(Math.max(Number.parseInt(query.limit, 10) || 20, 1), 100);
   const skip = (page - 1) * limit;
@@ -23,7 +25,7 @@ const list = async (query = {}) => {
 
 const getById = async (id) => {
   const usuario = await Usuario.findById(id);
-  if (!usuario || !usuario.active) {
+  if (!usuario) { // Cambiado: ahora permite cargar usuarios inactivos
     throw createError('Usuario no encontrado', 404);
   }
   return usuario;
