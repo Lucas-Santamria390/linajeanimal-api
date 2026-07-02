@@ -53,6 +53,7 @@ Almacena los usuarios del sistema con sus credenciales y roles.
 | `password`  | String       | Sí        | No    | —           | Hash bcrypt de la contraseña (salt ≥ 10)       |
 | `rol`       | String       | Sí        | No    | `'user'`    | Enum: `'admin'` o `'user'`                     |
 | `active`    | Boolean      | No        | No    | `true`      | Soft delete (false = desactivado)              |
+| `tokenVersion` | Number   | No        | No    | `0`         | Versión del token (se incrementa al cambiar password o hacer logout) |
 | `createdAt` | Date         | Auto      | No    | Auto        | Fecha de creación                              |
 | `updatedAt` | Date         | Auto      | No    | Auto        | Fecha de última actualización                  |
 
@@ -69,6 +70,7 @@ Almacena los usuarios del sistema con sus credenciales y roles.
   "password": "$2a$10$...hash...",
   "rol": "user",
   "active": true,
+  "tokenVersion": 0,
   "createdAt": "2026-06-06T12:00:00.000Z",
   "updatedAt": "2026-06-06T12:00:00.000Z"
 }
@@ -251,7 +253,7 @@ genealógica y de identificación.
                 │ sexo (macho/hembra)                 │
                 │ fechaNacimiento                     │
                 │ peso, color                         │
-                │ identificador (único sparse)        │
+                 │ identificador (único por propietario) │
                 │ fotoUrl, notas                      │
                 │ padre ────────────────────────────┐ │
                 │ madre ──────────────────────────┐ │ │

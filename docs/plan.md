@@ -508,8 +508,8 @@ if (payload.madre) {
 |---|---|---|---|
 | `GET /api/v1/animales` | 5 por documento | 2 (padre, madre) | −60% |
 | `GET /api/v1/animales/:id` | 5 | 2 (padre, madre) | −60% |
-| `GET /arbol-genealogico/:id` | 5 por nodo | 0 (todo en el doc) | −100% |
-| `GET /:id/hijos` | 1 query + 5 populates | 1 query + 2 populates | −60% |
+| `GET /:id/family-tree` | 5 por nodo | 0 (todo en el doc) | −100% |
+| `GET /:id/children` | 1 query + 5 populates | 1 query + 2 populates | −60% |
 
 ---
 

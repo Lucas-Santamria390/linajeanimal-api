@@ -107,7 +107,7 @@ npm run dev
 | GET | `/api/v1/animales` | Sí | — | Listar animales |
 | GET | `/api/v1/animales/:id` | Sí | — | Detalle de animal |
 | PUT | `/api/v1/animales/:id` | Sí | — | Actualizar animal |
-| DELETE | `/api/v1/animales/:id` | Sí | — | Desactivar animal |
+| DELETE | `/api/v1/animales/:id` | Sí | admin | Desactivar animal |
 | POST | `/api/v1/animales/:id/parents` | Sí | — | Asignar o desasignar padres |
 | GET | `/api/v1/animales/:id/family-tree` | Sí | — | Árbol genealógico |
 | GET | `/api/v1/animales/:id/children` | Sí | — | Hijos directos |
@@ -178,10 +178,10 @@ https://linajeanimal-api.onrender.com/api/v1/docs
 El script `npm run seed` limpia las colecciones principales y crea datos de ejemplo
 para:
 
-- 2 usuarios de prueba: `admin` y `user`
-- 3 especies: `Perro`, `Gato` y `Caballo`
-- 6 razas vinculadas a sus especies
-- 10+ animales, incluyendo una linea genealogica de 3 generaciones
+- **2 usuarios** de prueba: `admin` y `user`
+- **5 especies**: `Bovino`, `Ovino`, `Caprino`, `Porcino` y `Equino`
+- **14 razas** vinculadas a sus especies (Angus, Hereford, Holstein, Dorper, Merino, etc.)
+- **15 animales**, incluyendo una línea genealógica de 3 generaciones con relaciones padre-madre-hijo
 
 Credenciales creadas por el seed:
 

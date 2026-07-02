@@ -115,8 +115,8 @@
 | **Descripción** | Una persona se registra en el sistema                         |
 | **Precondición**| El email no está registrado previamente.                       |
 | **Postcondición**| Se crea un nuevo usuario con rol `user` por defecto.           |
-| **Flujo normal**| 1. El usuario envía `POST /api/v1/auth/register` con email, password, nombre.<br>2. El sistema valida formato email y password ≥ 6 caracteres.<br>3. Hashea password con bcrypt (salt 10).<br>4. Crea usuario con rol `user` por defecto.<br>5. Responde `201 Created` (sin password en la respuesta). |
-| **Flujo alterno**| 2a. Email inválido o password < 6 caracteres → `400 Bad Request`.<br>4a. Email duplicado → `400 Bad Request`. |
+| **Flujo normal**| 1. El usuario envía `POST /api/v1/auth/register` con email, password, nombre.<br>2. El sistema valida formato email y password ≥ 8 caracteres con mayúscula, número y carácter especial.<br>3. Hashea password con bcrypt (salt 10).<br>4. Crea usuario con rol `user` por defecto.<br>5. Responde `201 Created` (sin password en la respuesta). |
+| **Flujo alterno**| 2a. Email inválido o password < 8 caracteres → `400 Bad Request`.<br>4a. Email duplicado → `400 Bad Request`. |
 
 ---
 
@@ -128,7 +128,7 @@
 | **Descripción** | Un usuario registrado inicia sesión en el sistema             |
 | **Precondición**| El usuario existe y está activo.                               |
 | **Postcondición**| Se devuelve un token JWT válido.                               |
-| **Flujo normal**| 1. El usuario envía `POST /api/v1/auth/login` con email y password.<br>2. El sistema verifica credenciales (email existe, password coincide).<br>3. Genera token JWT con `{ id, rol }` y expiry.<br>4. Responde `200 OK` con token y datos del usuario (sin password). |
+| **Flujo normal**| 1. El usuario envía `POST /api/v1/auth/login` con email y password.<br>2. El sistema verifica credenciales (email existe, password coincide).<br>3. Genera token JWT con `{ id, rol, tokenVersion }` y expiry (7 días).<br>4. Responde `200 OK` con token y datos del usuario (sin password). |
 | **Flujo alterno**| 2a. Credenciales inválidas → `401 Unauthorized`.<br>2b. Usuario desactivado → `401 Unauthorized`. |
 
 ---
