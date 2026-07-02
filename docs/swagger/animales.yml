@@ -647,11 +647,20 @@ components:
   schemas:
     Animal:
       type: object
+      required:
+        - identificador
+        - especie
+        - raza
+        - sexo
+        - fechaNacimiento
+        - propietario
+        - active
       properties:
         _id:
           type: string
         nombre:
           type: string
+          description: Nombre del animal (opcional)
         sexo:
           type: string
           enum: [macho, hembra]
@@ -664,6 +673,7 @@ components:
           type: string
         identificador:
           type: string
+          description: Código único del animal (requerido, único por propietario)
         fotoUrl:
           type: string
         notas:

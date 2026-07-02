@@ -1,8 +1,8 @@
 # Consideraciones de Base de Datos — LinajeAnimal
 
-> **Versión:** 1.2  
+> **Versión:** 1.3  
 > **Proyecto:** LinajeAnimal — API REST para gestión de árbol genealógico de animales  
-> **Fecha:** Junio 2026
+> **Fecha:** Julio 2026
 
 ---
 
@@ -109,7 +109,7 @@ Todos los modelos usan `{ timestamps: true }` de Mongoose, que añade `createdAt
 ### 3.4 Índices
 
 1. Crear índices compuestos para consultas con múltiples filtros (`{ campo1: 1, campo2: 1 }`).
-2. Usar `{ unique: true, sparse: true }` para campos opcionales pero únicos (ej. `identificador`).
+2. Usar `{ unique: true }` o índices compuestos únicos para campos que deben ser únicos bajo ciertas condiciones (ej. `{ identificador: 1, 'propietario._id': 1 }` — único por propietario).
 3. Revisar índices periódicamente con `mongosh`:
 
 ```javascript
@@ -195,4 +195,5 @@ db.animales.aggregate([{ $indexStats: {} }])
 | Versión | Fecha      | Descripción | Autor |
 |---------|------------|-------------|-------|
 | 1.0     | 2026-06-19 | Versión inicial | Doc Team |
-| 1.2     | 2026-06-27 | Sección 2.2 actualizada: Extended Reference y Computed Pattern marcados como implementados; sección 4 movida de "futuros sprints" a "implementados". | S. Ábrego |
+| 1.2     | 2026-06-27 | Extended Reference y Computed Pattern marcados como implementados | S. Ábrego |
+| 1.3     | 2026-07-01 | Índice de `identificador` cambiado de `unique sparse` a compuesto único `{ identificador, propietario._id }`. | Doc Team |
