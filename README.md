@@ -16,6 +16,195 @@ API REST para la gestión de árboles genealógicos de animales. Permite registr
 | express-rate-limit | Protección contra fuerza bruta |
 | Docker | Entorno reproducible |
 
+## Arquitectura del proyecto
+
+La API sigue una arquitectura en capas:
+
+```
+Cliente → [Routes] → [Controllers] → [Services] → [Models] → MongoDB
+                 ↕                              ↕
+            [Middleware]              [Extended Reference]
+         (auth, role, rateLimit,    (especie, raza, propietario
+          validation, errorHandler)   embebidos en Animal)
+```
+
+- **`server.js`** — solo inicia el servidor con `listen()`
+- **`app.js`** — configura Express (middlewares globales, rutas, manejador de errores)
+- **`routes/`** — define las rutas HTTP y aplica validaciones con `express-validator`
+- **`controllers/`** — controladores delgados que reciben el request y delegan en services
+- **`services/`** — lógica de negocio pura (CRUD, reglas de parentesco, árbol genealógico)
+- **`models/`** — esquemas Mongoose con validación a nivel de documento
+- **`middleware/`** — autenticación JWT, autorización por roles, rate limiting, manejo centralizado de errores
+
+## Modelo de datos
+
+El sistema utiliza **MongoDB** con 4 colecciones principales:
+
+```
+┌──────────────────┐          ┌──────────────────┐
+│     Usuario      │          │     Especie      │
+│──────────────────│          │──────────────────│
+│ _id              │          │ _id              │
+│ nombre           │          │ nombre (único)   │
+│ email (único)    │          │ descripcion      │
+│ password (hash)  │          │ active           │
+│ rol (admin/user) │          └────────┬─────────┘
+│ active           │                   │
+│ tokenVersion     │                   │ 1
+└────────┬─────────┘                   │
+         │                            │
+         │ 1               ┌──────────┴──────────┐
+         │                 │        Raza          │
+         │                 │──────────────────────│
+         │                 │ _id                  │
+         │                 │ nombre               │
+         │                 │ descripcion          │
+         │                 │ especie ─────────────┘
+         │                 │ active
+         │                 └──────────┬───────────┘
+         │                            │ N
+         │ *                          │
+         │      ┌─────────────────────┴──────────────┐
+         │      │             Animal                  │
+         └──────┤ propietario (Extended Ref)         │
+                │ especie (Extended Ref) ───────────►│ Especie
+                │ raza (Extended Ref) ──────────────►│ Raza
+                │ sexo (macho/hembra)                 │
+                │ fechaNacimiento                     │
+                │ identificador (único x propietario) │
+                │ padre ──── auto-ref (ObjectId)      │
+                │ madre ──── auto-ref (ObjectId)      │
+                │ cantidadHijos (computado)           │
+                │ active                              │
+                └─────────────────────────────────────┘
+```
+
+**Estrategias de modelado:**
+
+| Patrón | Aplicación |
+|--------|-----------|
+| **Parent References** | Padre/madre como `ObjectId` ref a Animal — permite navegación ascendente rápida |
+| **Extended Reference** | `especie`, `raza` y `propietario` se almacenan como objetos embebidos `{ _id, nombre }` para reducir `.populate()` de 5 a 2 |
+| **Soft Delete** | Todas las entidades tienen `active: Boolean` (default `true`). Ninguna operación elimina físicamente |
+| **Campo Computado** | `cantidadHijos` en Animal se actualiza con `$inc` al asignar padres |
+| **Timestamps** | `createdAt` y `updatedAt` automáticos en todos los modelos |
+
+## Reglas de negocio
+
+| Regla | Implementación |
+|-------|---------------|
+| El padre debe ser de sexo `macho` y la madre de sexo `hembra` | Service layer |
+| Padre y madre deben pertenecer a la misma especie que el hijo | Service layer |
+| Un animal no puede ser su propio padre/madre ni formar ciclos | Validación recursiva con profundidad máxima |
+| Solo los administradores pueden crear/editar especies y razas | Role middleware (`authorize('admin')`) |
+| Un usuario `user` solo puede modificar animales donde sea `propietario` | Verificación en service |
+| El email debe tener formato válido y password ≥ 8 caracteres (mayúscula, número, especial) | express-validator + regex |
+| Todos los ObjectId se validan antes de consultar la BD | express-validator con `isMongoId()` |
+| No se exponen contraseñas en respuestas de la API | `select: false` en esquema Mongoose |
+
+## Flujo de autenticación
+
+```
+Registro:  POST /api/v1/auth/register
+             → validar email + password
+             → hash bcrypt (salt 10)
+             → crear usuario (rol "user" por defecto)
+             → 201 Created (sin password)
+
+Login:     POST /api/v1/auth/login
+             → verificar credenciales
+             → generar JWT { id, rol, tokenVersion } (expira: 7 días)
+             → 200 OK + token + datos usuario
+
+Request protejido:
+             → Authorization: Bearer <token>
+             → auth middleware: verifica JWT + busca usuario activo
+             → adjunta req.usuario
+             → 401 si token inválido/expirado
+
+Logout / Cambio de password:
+             → incrementa tokenVersion en BD
+             → todos los tokens anteriores quedan inválidos
+```
+
+## Ejemplos de uso
+
+### Login
+
+```bash
+curl -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@linajeanimal.test", "password": "Admin123!"}'
+```
+
+```json
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIs...",
+    "usuario": { "_id": "...", "nombre": "Admin", "email": "admin@linajeanimal.test", "rol": "admin" }
+  }
+}
+```
+
+### Crear un animal
+
+```bash
+curl -X POST http://localhost:3000/api/v1/animales \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{
+    "identificador": "BOV-001",
+    "nombre": "Torito",
+    "especie": { "_id": "ID_ESPECIE", "nombre": "Bovino" },
+    "raza": { "_id": "ID_RAZA", "nombre": "Angus" },
+    "sexo": "macho",
+    "fechaNacimiento": "2023-05-10",
+    "peso": 450
+  }'
+```
+
+```json
+{
+  "success": true,
+  "data": { "_id": "...", "identificador": "BOV-001", "nombre": "Torito", "sexo": "macho", ... }
+}
+```
+
+### Consultar árbol genealógico
+
+```bash
+curl -X GET http://localhost:3000/api/v1/animales/ID_ANIMAL/family-tree?generaciones=3 \
+  -H "Authorization: Bearer <token>"
+```
+
+```json
+{
+  "success": true,
+  "data": {
+    "generaciones": 3,
+    "arbol": {
+      "_id": "...",
+      "identificador": "BOV-001",
+      "nombre": "Torito",
+      "padre": { "_id": "...", "identificador": "BOV-000", "nombre": "Toro Padre", "padre": null, "madre": null },
+      "madre": { "_id": "...", "identificador": "BOV-100", "nombre": "Vaca Madre", "padre": null, "madre": null }
+    }
+  }
+}
+```
+
+## Documentación detallada
+
+La documentación completa del proyecto se encuentra en la carpeta `docs/`:
+
+| Archivo | Contenido |
+|---------|-----------|
+| [`docs/requisitos.md`](docs/requisitos.md) | Requisitos funcionales y no funcionales, roles, restricciones técnicas |
+| [`docs/casos-de-uso.md`](docs/casos-de-uso.md) | Casos de uso con flujos normales/alternos y ejemplos de respuesta |
+| [`docs/modelo-de-datos.md`](docs/modelo-de-datos.md) | Esquemas detallados, índices, validaciones de dominio y seguridad |
+| [`docs/swagger/`](docs/swagger/) | Especificaciones OpenAPI para cada recurso (auth, especies, razas, animales, usuarios) |
+
 ## Requisitos previos
 
 - **Opción A (recomendada):** Docker + Docker Compose
@@ -178,15 +367,20 @@ https://linajeanimal-api.onrender.com/api/v1/docs
 El script `npm run seed` limpia las colecciones principales y crea datos de ejemplo
 para:
 
-- **2 usuarios** de prueba: `admin` y `user`
+- **3 usuarios** de prueba: `admin`, `juan` y `maria`
 - **5 especies**: `Bovino`, `Ovino`, `Caprino`, `Porcino` y `Equino`
 - **14 razas** vinculadas a sus especies (Angus, Hereford, Holstein, Dorper, Merino, etc.)
-- **15 animales**, incluyendo una línea genealógica de 3 generaciones con relaciones padre-madre-hijo
+- **25 animales**, incluyendo árboles genealógicos de 3 generaciones
+
+Cada usuario normal (`juan` y `maria`) tiene **10 animales Bovino** con sus propios árboles
+genealógicos independientes (líneas Angus, Hereford y Holstein), sin mezclar propietarios.
+El admin posee 1 animal por especie a modo de demostración.
 
 Credenciales creadas por el seed:
 
 - `admin@linajeanimal.test` / `Admin123!`
-- `usuario@linajeanimal.test` / `User123!`
+- `juan@linajeanimal.test` / `User123!`
+- `maria@linajeanimal.test` / `User123!`
 
 ## Licencia
 
