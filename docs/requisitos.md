@@ -1,8 +1,8 @@
 # Requisitos del Sistema — LinajeAnimal
 
-> **Versión:** 1.2  
+> **Versión:** 1.3  
 > **Proyecto:** LinajeAnimal — API REST para gestión de árbol genealógico de animales  
-> **Fecha:** Junio 2026
+> **Fecha:** Julio 2026
 
 ---
 
@@ -43,7 +43,7 @@ que necesite mantener un registro estructurado de animales con trazabilidad gene
 
 | ID     | Descripción                                                                 | Prioridad |
 |--------|-----------------------------------------------------------------------------|-----------|
-| RF-11  | Registrar un nuevo animal con: nombre, especie, raza, sexo, fecha de nacimiento, peso, color, identificador único (microchip/tatuaje/número de registro), foto URL, notas | Alta      |
+| RF-11  | Registrar un nuevo animal con: identificador (requerido, único por propietario), especie, raza, sexo, fecha de nacimiento, y opcionalmente nombre, peso, color, foto URL, notas | Alta      |
 | RF-12  | Asignar padre y/o madre a un animal (relaciones de parentesco)              | Alta      |
 | RF-13  | Listar animales con filtros por especie, raza, sexo, propietario, activos   | Alta      |
 | RF-14  | Obtener detalle completo de un animal (incluyendo padres e hijos)           | Alta      |

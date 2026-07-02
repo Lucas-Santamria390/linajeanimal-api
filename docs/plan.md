@@ -1,8 +1,8 @@
 # Plan de Implementación — LinajeAnimal
 
-> **Versión:** 1.2  
+> **Versión:** 1.3  
 > **Proyecto:** LinajeAnimal — API REST para gestión de árbol genealógico de animales  
-> **Fecha:** Junio 2026
+> **Fecha:** Julio 2026
 
 ---
 
@@ -177,24 +177,24 @@ npm install --save-dev nodemon
 
 **Endpoints base:**
 - `POST /api/v1/animales` — crear animal (asigna `propietario` = usuario autenticado)
-- `GET /api/v1/animales` — listar (con filtros: especie, raza, sexo, propietario, activo)
-- `GET /api/v1/animales/:id` — detalle (populate de especie, raza, padre, madre, propietario)
+- `GET /api/v1/animales` — listar (con filtros: especie, raza, sexo, propietario, active) — ordenado por `identificador` ascendente
+- `GET /api/v1/animales/:id` — detalle (populate de padre y madre)
 - `PUT /api/v1/animales/:id` — actualizar (solo admin o propietario)
-- `DELETE /api/v1/animales/:id` — soft delete (solo admin o propietario)
+- `DELETE /api/v1/animales/:id` — soft delete (solo admin)
 
 **Validaciones específicas de Animal:**
 - `especie` y `raza` deben ser ObjectId válidos
 - `sexo` debe ser `macho` o `hembra`
-- `fechaNacimiento` debe ser una fecha válida, no futura (⚠️ pendiente de implementar en modelo o service)
+- `fechaNacimiento` debe ser una fecha válida, no futura
 - `padre` si se proporciona: debe existir, ser activo, de sexo `macho`, misma especie
 - `madre` si se proporciona: debe existir, ser activa, de sexo `hembra`, misma especie
-- `identificador` único (índice sparse, permite múltiples nulls)
+- `identificador` requerido, único por propietario (índice compuesto único)
 - El usuario autenticado se asigna automáticamente como `propietario`
 
 **Autorización:**
-- Admin: CRUD completo sobre cualquier animal
+- Admin: CRUD completo sobre cualquier animal. Puede filtrar por `?propietario=ID` en listado.
 - User: CRUD solo sobre animales donde `propietario` = su ID
-- Lectura (GET): cualquier usuario autenticado puede ver cualquier animal activo
+- Lectura (GET detalle/children/siblings/family-tree): usuario regular obtiene 403 si el animal no es suyo. Admin puede ver cualquier animal.
 
 ---
 
@@ -205,26 +205,38 @@ npm install --save-dev nodemon
 
 | #   | Tarea                                                        | Archivos involucrados                         | Estimación |
 |-----|--------------------------------------------------------------|-----------------------------------------------|------------|
-| 6.1 | Implementar `GET /api/v1/animales/:id/arbol-genealogico`        | `services/animalService.js` + controller       | 25 min     |
-| 6.2 | Implementar `GET /api/v1/animales/:id/hijos`                    | `services/animalService.js` + controller       | 10 min     |
-| 6.3 | Implementar `GET /api/v1/animales/:id/hermanos`                 | `services/animalService.js` + controller       | 10 min     |
-| 6.4 | Implementar `PATCH /api/v1/animales/:id/padres` (asignar padres)| `services/animalService.js` + controller       | 15 min     |
+| 6.1 | Implementar `GET /api/v1/animales/:id/family-tree`              | `services/animalService.js` + controller       | 25 min     |
+| 6.2 | Implementar `GET /api/v1/animales/:id/children`                 | `services/animalService.js` + controller       | 10 min     |
+| 6.3 | Implementar `GET /api/v1/animales/:id/siblings`                 | `services/animalService.js` + controller       | 10 min     |
+| 6.4 | Implementar `POST /api/v1/animales/:id/parents` (asignar padres)| `services/animalService.js` + controller       | 15 min     |
 | 6.5 | Agregar rutas a `routes/animalesRoutes.js`                  | `routes/animalesRoutes.js`                     | 5 min      |
 
 **Detalle del árbol genealógico:**
 ```javascript
 // Lógica recursiva con profundidad configurable (default 3, max 5)
-async function construirArbol(animalId, profundidad = 3, actual = 0) {
-  if (actual >= profundidad) return null;
-  const animal = await Animal.findById(animalId).populate('padre madre');
+async function buildTreeNode(animalId, maxDepth, currentDepth = 0, visited = new Set()) {
+  if (!animalId || currentDepth > maxDepth) return null;
+  
+  const key = animalId.toString();
+  if (visited.has(key)) return null;
+  visited.add(key);
+  
+  const animal = await Animal.findById(animalId)
+    .populate('padre', 'identificador nombre sexo especie raza fechaNacimiento active')
+    .populate('madre', 'identificador nombre sexo especie raza fechaNacimiento active');
   if (!animal) return null;
   
   return {
-    id: animal._id,
+    _id: animal._id,
+    identificador: animal.identificador,
     nombre: animal.nombre,
     sexo: animal.sexo,
-    padre: await construirArbol(animal.padre?._id, profundidad, actual + 1),
-    madre: await construirArbol(animal.madre?._id, profundidad, actual + 1)
+    fechaNacimiento: animal.fechaNacimiento,
+    especie: animal.especie,
+    raza: animal.raza,
+    propietario: animal.propietario,
+    padre: await buildTreeNode(animal.padre?._id, maxDepth, currentDepth + 1, new Set(visited)),
+    madre: await buildTreeNode(animal.madre?._id, maxDepth, currentDepth + 1, new Set(visited)),
   };
 }
 ```
@@ -459,7 +471,7 @@ incluye el servicio `mongodb`, por lo que no se necesita MongoDB instalado en el
 ```javascript
 // models/Animal.js — después de Fase 9
 const animalSchema = new mongoose.Schema({
-  nombre: { type: String, required: true, trim: true },
+  nombre: { type: String, trim: true },
   especie: {
     _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Especie', required: true },
     nombre: { type: String, required: true }
@@ -507,4 +519,5 @@ if (payload.madre) {
 |---------|------------|------------------------|--------|
 | 1.0     | 2026-06-06 | Versión inicial                          | Doc Team |
 | 1.1     | 2026-06-19 | Agregada Fase 9 — Optimización MongoDB   | Doc Team |
-| 1.2     | 2026-06-27 | **Cierre definitivo de la Fase 9.** Se actualiza el documento reflejando la implementación real del patrón *Extended Reference* y *Computed*, el desuso de los hooks de Mongoose moviendo la lógica a servicios, y el cambio formal de las rutas de animales a inglés. | S. Ábrego |
+| 1.2     | 2026-06-27 | Cierre definitivo de la Fase 9. Rutas a inglés. Extended References y Computed. | S. Ábrego |
+| 1.3     | 2026-07-01 | `identificador` pasa a requerido; `nombre` a opcional. Aislamiento por propietario (403 para usuarios regulares). Ordenamiento por `identificador`. | Doc Team |
