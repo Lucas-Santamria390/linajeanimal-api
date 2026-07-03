@@ -39,24 +39,18 @@ paths:
                   pagination:
                     type: object
                     properties:
-                      totalDocs:
-                        type: integer
-                        example: 25
-                      limit:
-                        type: integer
-                        example: 10
                       page:
                         type: integer
                         example: 1
-                      totalPages:
+                      limit:
+                        type: integer
+                        example: 10
+                      total:
+                        type: integer
+                        example: 25
+                      pages:
                         type: integer
                         example: 3
-                      hasNextPage:
-                        type: boolean
-                        example: true
-                      hasPrevPage:
-                        type: boolean
-                        example: false
         401:
           $ref: '#/components/responses/401Unauthorized'
         403:

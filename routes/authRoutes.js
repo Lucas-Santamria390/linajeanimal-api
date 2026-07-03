@@ -31,7 +31,11 @@ router.post('/login',
 router.put('/password',
   auth,
   body('currentPassword').notEmpty().withMessage('La contraseña actual es obligatoria'),
-  body('newPassword').isLength({ min: 8 }).withMessage('La nueva contraseña debe tener al menos 8 caracteres'),
+  body('newPassword')
+    .isLength({ min: 8 }).withMessage('La nueva contraseña debe tener al menos 8 caracteres')
+    .matches(/[A-Z]/).withMessage('Debe contener una mayúscula')
+    .matches(/[0-9]/).withMessage('Debe contener un número')
+    .matches(/[^A-Za-z0-9]/).withMessage('Debe contener un carácter especial'),
   validarCampos,
   controller.changePassword
 );
