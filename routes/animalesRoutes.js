@@ -1,3 +1,4 @@
+// Rutas de animales CRUD + genealogía (todas requieren autenticación)
 const { Router } = require('express');
 const { body, param, query } = require('express-validator');
 const mongoose = require('mongoose');
@@ -8,6 +9,7 @@ const validarCampos = require('../middleware/validarCampos');
 
 const router = Router();
 
+// Helper: valida MongoId opcional (acepta null para eliminar la referencia)
 const mongoIdOptional = (field, message) => {
   return body(field)
     .optional({ nullable: true })
@@ -15,6 +17,7 @@ const mongoIdOptional = (field, message) => {
     .withMessage(message);
 };
 
+// Validaciones para creación de animal
 const createValidators = [
   body('nombre').optional({ nullable: true }).trim().notEmpty().withMessage('El nombre no puede estar vacio').escape(),
   body('especie').isMongoId().withMessage('La especie debe ser un ID valido'),
@@ -34,6 +37,7 @@ const createValidators = [
   mongoIdOptional('madre', 'La madre debe ser un ID valido'),
 ];
 
+// Validaciones para actualización de animal (todos los campos opcionales)
 const updateValidators = [
   body('nombre').optional({ nullable: true }).trim().notEmpty().withMessage('El nombre no puede estar vacio').escape(),
   body('especie').optional({ nullable: true }).isMongoId().withMessage('La especie debe ser un ID valido'),
@@ -51,11 +55,13 @@ const updateValidators = [
   body('notas').optional({ nullable: true }).trim().escape(),
 ];
 
+// Validaciones para asignar padres (ambos opcionales, pero al menos uno requerido)
 const parentValidators = [
   mongoIdOptional('padre', 'El padre debe ser un ID valido'),
   mongoIdOptional('madre', 'La madre debe ser un ID valido'),
 ];
 
+// Middleware inline: verifica que se envíe padre, madre o ambos
 const atLeastOneParent = (req, res, next) => {
   const hasPadre = Object.prototype.hasOwnProperty.call(req.body, 'padre');
   const hasMadre = Object.prototype.hasOwnProperty.call(req.body, 'madre');
@@ -67,6 +73,7 @@ const atLeastOneParent = (req, res, next) => {
   next();
 };
 
+// GET / — lista animales con filtros y paginación
 router.get('/',
   auth,
   query('especie').optional().isMongoId().withMessage('Especie invalida'),
@@ -80,6 +87,7 @@ router.get('/',
   controller.list
 );
 
+// GET /:id — detalle de animal
 router.get('/:id',
   auth,
   param('id').isMongoId().withMessage('ID invalido'),
@@ -87,6 +95,7 @@ router.get('/:id',
   controller.getById
 );
 
+// POST / — crea animal
 router.post('/',
   auth,
   ...createValidators,
@@ -94,6 +103,7 @@ router.post('/',
   controller.create
 );
 
+// PUT /:id — actualiza animal
 router.put('/:id',
   auth,
   param('id').isMongoId().withMessage('ID invalido'),
@@ -102,6 +112,7 @@ router.put('/:id',
   controller.update
 );
 
+// DELETE /:id — soft delete (solo admin)
 router.delete('/:id',
   auth,
   authorize('admin'),
@@ -110,6 +121,7 @@ router.delete('/:id',
   controller.deactivate
 );
 
+// GET /:id/family-tree — árbol genealógico (opcional ?generaciones=)
 router.get('/:id/family-tree',
   auth,
   param('id').isMongoId().withMessage('ID invalido'),
@@ -117,6 +129,7 @@ router.get('/:id/family-tree',
   controller.tree
 );
 
+// GET /:id/children — hijos directos
 router.get('/:id/children',
   auth,
   param('id').isMongoId().withMessage('ID invalido'),
@@ -124,6 +137,7 @@ router.get('/:id/children',
   controller.children
 );
 
+// GET /:id/siblings — hermanos
 router.get('/:id/siblings',
   auth,
   param('id').isMongoId().withMessage('ID invalido'),
@@ -131,6 +145,7 @@ router.get('/:id/siblings',
   controller.siblings
 );
 
+// POST /:id/parents — asigna padre/madre
 router.post('/:id/parents',
   auth,
   param('id').isMongoId().withMessage('ID invalido'),

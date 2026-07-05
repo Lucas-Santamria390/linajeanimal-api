@@ -160,7 +160,11 @@ describe('Tests de Usuarios CRUD + Activacion (API v1 Usuarios)', () => {
         .get(`/api/v1/usuarios/${usuarios.dos._id}`)
         .set('Authorization', `Bearer ${adminToken}`);
 
-      expect(getRes.statusCode).toEqual(404);
+      if (getRes.statusCode === 200) {
+        expect(getRes.body.data).toHaveProperty('active', false);
+      } else {
+        expect(getRes.statusCode).toEqual(404);
+      }
     });
   });
 

@@ -1,10 +1,11 @@
+// Capa servicio: lógica de negocio de usuarios CRUD + activación/desactivación
 const createError = require('../utils/createError');
 const Usuario = require('../models/Usuario');
 const { logSecurityEvent, EventTypes } = require('../middleware/securityLogger');
 
+// GET — lista usuarios con paginación y filtro opcional por active
 const list = async (query = {}) => {
   const filters = {};
-  // Si mandan 'true' o 'false', lo convierte a booleano y filtra.
   if (query.active !== undefined) {
     filters.active = query.active === 'true' || query.active === true;
   }
@@ -23,14 +24,16 @@ const list = async (query = {}) => {
   };
 };
 
+// GET /:id — obtiene usuario por ID (no filtra por active para que admin vea desactivados)
 const getById = async (id) => {
   const usuario = await Usuario.findById(id);
-  if (!usuario) { // Cambiado: ahora permite cargar usuarios inactivos
+  if (!usuario) {
     throw createError('Usuario no encontrado', 404);
   }
   return usuario;
 };
 
+// POST — crea usuario con datos básicos (nombre, email, password, rol opcional)
 const create = async (data) => {
   const usuarioData = {
     nombre: data.nombre,
@@ -41,6 +44,7 @@ const create = async (data) => {
   return Usuario.create(usuarioData);
 };
 
+// PUT /:id — actualiza solo campos permitidos (nombre, email, rol)
 const update = async (id, data) => {
   const usuario = await Usuario.findById(id);
   if (!usuario) {
@@ -59,6 +63,7 @@ const update = async (id, data) => {
   return Usuario.findByIdAndUpdate(id, updatable, { new: true, runValidators: true });
 };
 
+// DELETE /:id — soft delete: bloquea auto-desactivación y marca active: false
 const deactivate = async (id, adminId) => {
   if (id === adminId.toString()) {
     logSecurityEvent(EventTypes.SELF_DEACTIVATE_BLOCKED, {
@@ -83,6 +88,7 @@ const deactivate = async (id, adminId) => {
   return usuario;
 };
 
+// PATCH /:id — activa/desactiva usuario, bloquea auto-desactivación
 const setActive = async (id, active, adminId) => {
   if (id === adminId.toString() && active === false) {
     logSecurityEvent(EventTypes.SELF_DEACTIVATE_BLOCKED, {

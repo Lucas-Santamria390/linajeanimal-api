@@ -1,3 +1,4 @@
+// Configuración de Swagger para documentación automática de la API
 const swaggerJsdoc = require('swagger-jsdoc');
 const config = require('./env');
 
@@ -13,6 +14,7 @@ const options = {
       { url: process.env.API_URL || `http://localhost:${config.port}`, description: 'API server' },
     ],
     components: {
+      // Esquema de seguridad JWT para endpoints protegidos
       securitySchemes: {
         bearerAuth: {
           type: 'http',
@@ -22,6 +24,7 @@ const options = {
       },
     },
   },
+  // Escanea rutas y archivos yml para generar la documentación
   apis: ['./routes/*.js', './docs/swagger/*.yml'],
 };
 

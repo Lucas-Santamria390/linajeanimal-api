@@ -1,3 +1,4 @@
+// Rutas CRUD de razas (GET público, POST/PUT/DELETE solo admin)
 const { Router } = require('express');
 const { body, param, query } = require('express-validator');
 const controller = require('../controllers/razaController');
@@ -7,6 +8,7 @@ const validarCampos = require('../middleware/validarCampos');
 
 const router = Router();
 
+// GET / — lista razas, opcionalmente filtradas por ?especie= (público)
 router.get('/',
   query('especie').optional().isMongoId().withMessage('ID de especie invalido'),
   query('active').optional().isBoolean().withMessage('Active debe ser booleano'),
@@ -14,12 +16,14 @@ router.get('/',
   controller.list
 );
 
+// GET /:id — detalle de raza (público)
 router.get('/:id',
   param('id').isMongoId().withMessage('ID inválido'),
   validarCampos,
   controller.getById
 );
 
+// POST / — crea raza vinculada a especie (solo admin)
 router.post('/',
   auth,
   authorize('admin'),
@@ -31,6 +35,7 @@ router.post('/',
   controller.create
 );
 
+// PUT /:id — actualiza raza (solo admin)
 router.put('/:id',
   auth,
   authorize('admin'),
@@ -43,6 +48,7 @@ router.put('/:id',
   controller.update
 );
 
+// DELETE /:id — soft delete (solo admin)
 router.delete('/:id',
   auth,
   authorize('admin'),

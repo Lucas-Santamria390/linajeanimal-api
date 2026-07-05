@@ -1,3 +1,4 @@
+// Rutas CRUD de usuarios (solo admin, excepto auth)
 const { Router } = require('express');
 const { body, param, query } = require('express-validator');
 const controller = require('../controllers/usuarioController');
@@ -7,6 +8,7 @@ const validarCampos = require('../middleware/validarCampos');
 
 const router = Router();
 
+// GET / — lista usuarios con paginación (?page=1&limit=20) y filtro ?active= (solo admin)
 router.get('/',
   auth,
   authorize('admin'),
@@ -17,6 +19,7 @@ router.get('/',
   controller.list
 );
 
+// GET /:id — detalle de usuario (solo admin)
 router.get('/:id',
   auth,
   authorize('admin'),
@@ -25,6 +28,7 @@ router.get('/:id',
   controller.getById
 );
 
+// POST / — crea usuario con validación de contraseña fuerte (solo admin)
 router.post('/',
   auth,
   authorize('admin'),
@@ -40,6 +44,7 @@ router.post('/',
   controller.create
 );
 
+// PUT /:id — actualiza usuario (nombre, email, rol) (solo admin)
 router.put('/:id',
   auth,
   authorize('admin'),
@@ -51,6 +56,7 @@ router.put('/:id',
   controller.update
 );
 
+// DELETE /:id — soft delete (marca active: false) (solo admin)
 router.delete('/:id',
   auth,
   authorize('admin'),
@@ -59,6 +65,7 @@ router.delete('/:id',
   controller.deactivate
 );
 
+// PATCH /:id — activa/desactiva usuario (cambia active: true/false) (solo admin)
 router.patch('/:id',
   auth,
   authorize('admin'),

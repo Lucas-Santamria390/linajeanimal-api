@@ -1,5 +1,7 @@
+// Capa controlador: recibe las peticiones HTTP, delega en el servicio y responde JSON
 const razaService = require('../services/razaService');
 
+// GET /api/v1/razas — lista todas las razas, opcionalmente filtradas por especie
 const list = async (req, res, next) => {
   try {
     const filters = {};
@@ -11,6 +13,7 @@ const list = async (req, res, next) => {
   }
 };
 
+// POST /api/v1/razas — crea una nueva raza vinculada a una especie existente
 const create = async (req, res, next) => {
   try {
     const raza = await razaService.create(req.body);
@@ -20,6 +23,7 @@ const create = async (req, res, next) => {
   }
 };
 
+// GET /api/v1/razas/:id — obtiene una raza por su ID
 const getById = async (req, res, next) => {
   try {
     const raza = await razaService.getById(req.params.id);
@@ -29,6 +33,7 @@ const getById = async (req, res, next) => {
   }
 };
 
+// PUT /api/v1/razas/:id — actualiza una raza (nombre, descripción, especie)
 const update = async (req, res, next) => {
   try {
     const raza = await razaService.update(req.params.id, req.body);
@@ -38,6 +43,7 @@ const update = async (req, res, next) => {
   }
 };
 
+// DELETE /api/v1/razas/:id — soft delete (marca active: false)
 const deactivate = async (req, res, next) => {
   try {
     const raza = await razaService.deactivate(req.params.id);

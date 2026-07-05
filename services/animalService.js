@@ -1,3 +1,4 @@
+// Capa servicio: lógica de negocio de animales con genealogía y permisos por propietario
 const mongoose = require('mongoose');
 const Animal = require('../models/Animal');
 const Especie = require('../models/Especie');
@@ -6,13 +7,16 @@ const Usuario = require('../models/Usuario');
 
 const createError = require('../utils/createError');
 
+// Constantes del árbol genealógico
 const DEFAULT_TREE_DEPTH = 3;
 const MAX_TREE_DEPTH = 5;
 
+// Utilidades internas
 const toId = (value) => (value ? value.toString() : null);
 
 const isValidId = (value) => mongoose.Types.ObjectId.isValid(value);
 
+// Parsea query booleano desde string ("true"/"false"/"1"/"0")
 const parseBooleanQuery = (value) => {
   if (value === undefined) {
     return undefined;
@@ -33,6 +37,7 @@ const parseBooleanQuery = (value) => {
   return undefined;
 };
 
+// Parsea profundidad del árbol con límites seguro (1-5)
 const parseDepth = (value) => {
   const parsed = Number.parseInt(value, 10);
   if (Number.isNaN(parsed)) {
@@ -41,10 +46,12 @@ const parseDepth = (value) => {
   return Math.max(1, Math.min(parsed, MAX_TREE_DEPTH));
 };
 
+// Escapa caracteres especiales de Regex para búsquedas seguras
 const escapeRegex = (value) => {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
 
+// Valida que la fecha sea real y no esté en el futuro
 const assertValidDate = (value) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
@@ -58,12 +65,14 @@ const assertValidDate = (value) => {
   return date;
 };
 
+// Helper: hace populate de padre y madre en consultas de Animal
 const populateAnimalRelations = (query) => {
   return query
     .populate('padre', 'identificador nombre sexo especie raza fechaNacimiento active')
     .populate('madre', 'identificador nombre sexo especie raza fechaNacimiento active');
 };
 
+// Obtiene un animal activo validando permisos de lectura
 const getActiveAnimalOrThrow = async (id, usuario) => {
   if (!isValidId(id)) {
     throw createError('ID invalido', 400);
@@ -81,6 +90,7 @@ const getActiveAnimalOrThrow = async (id, usuario) => {
   return animal;
 };
 
+// Verifica permisos de escritura (solo admin o propietario)
 const assertCanManageAnimal = (animal, usuario) => {
   if (usuario?.rol === 'admin') {
     return;
@@ -92,6 +102,7 @@ const assertCanManageAnimal = (animal, usuario) => {
   }
 };
 
+// Verifica permisos de lectura (admin ve todo, user solo sus animales)
 const assertCanReadAnimal = (animal, usuario) => {
   if (!usuario || usuario.rol === 'admin') {
     return;
@@ -103,6 +114,7 @@ const assertCanReadAnimal = (animal, usuario) => {
   }
 };
 
+// Valida que especie y raza existan, estén activas y la raza pertenezca a la especie
 const validateSpeciesAndBreed = async (especieId, razaId) => {
   if (!isValidId(especieId)) {
     throw createError('La especie no es valida');
@@ -132,6 +144,7 @@ const validateSpeciesAndBreed = async (especieId, razaId) => {
   return { especie, raza };
 };
 
+// Valida un padre/madre candidato: mismo sexo, misma especie, sin ciclos
 const validateExistingParent = async ({ animal, speciesId, parentId, expectedSex, label }) => {
   if (parentId === undefined || parentId === null) {
     return null;
@@ -159,6 +172,7 @@ const validateExistingParent = async ({ animal, speciesId, parentId, expectedSex
     throw createError(`El ${label} debe pertenecer a la misma especie`);
   }
 
+  // Previene ciclos: el padre no puede ser descendiente del animal
   if (animal) {
     const isDescendant = await isDescendantOf(animal._id, parent._id);
     if (isDescendant) {
@@ -169,6 +183,7 @@ const validateExistingParent = async ({ animal, speciesId, parentId, expectedSex
   return parent._id;
 };
 
+// Verifica recursivamente si targetId es descendiente de rootId (detección de ciclos)
 const isDescendantOf = async (rootId, targetId, visited = new Set()) => {
   const rootKey = toId(rootId);
   if (!rootKey || visited.has(rootKey)) {
@@ -194,6 +209,7 @@ const isDescendantOf = async (rootId, targetId, visited = new Set()) => {
   return false;
 };
 
+// Construye recursivamente el árbol genealógico con control de profundidad y ciclos
 const buildTreeNode = async (animalId, maxDepth, currentDepth = 0, visited = new Set()) => {
   if (!animalId || currentDepth > maxDepth) {
     return null;
@@ -201,7 +217,7 @@ const buildTreeNode = async (animalId, maxDepth, currentDepth = 0, visited = new
 
   const key = toId(animalId);
   if (visited.has(key)) {
-    return null;
+    return null; // Evita ciclos infinitos
   }
 
   visited.add(key);
@@ -228,6 +244,7 @@ const buildTreeNode = async (animalId, maxDepth, currentDepth = 0, visited = new
   };
 };
 
+// Normaliza el payload de actualización: solo campos permitidos y limpia strings
 const normalizeUpdatePayload = (data) => {
   const payload = {};
   const allowedFields = ['nombre', 'especie', 'raza', 'sexo', 'fechaNacimiento', 'peso', 'color', 'identificador', 'fotoUrl', 'notas'];
@@ -257,12 +274,14 @@ const normalizeUpdatePayload = (data) => {
   return payload;
 };
 
+// GET — lista animales con filtros combinados y paginación
 const list = async (query = {}, usuario) => {
   const filters = {};
 
   const active = parseBooleanQuery(query.active);
   filters.active = active === undefined ? true : active;
 
+  // Filtro de propietario: admin ve todo, user solo sus animales
   if (usuario && usuario.rol !== 'admin') {
     filters['propietario._id'] = usuario._id;
   }
@@ -296,6 +315,7 @@ const list = async (query = {}, usuario) => {
     filters.sexo = query.sexo;
   }
 
+  // Admin puede filtrar por propietario específico
   if (query.propietario) {
     if (!isValidId(query.propietario)) {
       throw createError('El propietario no es valido');
@@ -313,7 +333,7 @@ const list = async (query = {}, usuario) => {
     Animal.countDocuments(filters),
     populateAnimalRelations(
       Animal.find(filters)
-        .collation({ locale: 'es' })
+        .collation({ locale: 'es' }) // Orden alfabético en español
         .sort({ identificador: 1 })
         .skip(skip)
         .limit(limit)
@@ -331,6 +351,7 @@ const list = async (query = {}, usuario) => {
   };
 };
 
+// POST — crea animal con subdocumentos embebidos y actualiza contadores
 const create = async (data, usuarioId) => {
   const fechaNacimiento = assertValidDate(data.fechaNacimiento);
   const { especie, raza } = await validateSpeciesAndBreed(data.especie, data.raza);
@@ -386,6 +407,7 @@ const create = async (data, usuarioId) => {
 
   const animal = await Animal.create(payload);
 
+  // Actualiza contadores desnormalizados
   if (payload.padre) {
     await Animal.findByIdAndUpdate(payload.padre, { $inc: { cantidadHijos: 1 } });
   }
@@ -399,10 +421,12 @@ const create = async (data, usuarioId) => {
   return getById(animal._id);
 };
 
+// GET /:id — obtiene animal por ID (hereda validaciones de getActiveAnimalOrThrow)
 const getById = async (id, usuario) => {
   return getActiveAnimalOrThrow(id, usuario);
 };
 
+// PUT /:id — actualiza animal validando cambios de especie/raza y relaciones familiares
 const update = async (id, data, usuario) => {
   const animal = await Animal.findById(id);
   if (!animal || !animal.active) {
@@ -425,6 +449,7 @@ const update = async (id, data, usuario) => {
     payload.fechaNacimiento = assertValidDate(payload.fechaNacimiento);
   }
 
+  // Bloquea cambio de sexo si el animal ya tiene hijos
   if (payload.sexo && payload.sexo !== animal.sexo) {
     const hasChildren = await Animal.exists({ $or: [{ padre: animal._id }, { madre: animal._id }] });
     if (hasChildren) {
@@ -435,6 +460,7 @@ const update = async (id, data, usuario) => {
   const speciesChanged = payload.especie !== undefined && toId(payload.especie) !== toId(oldEspecieId);
   const needsFamilyValidation = payload.especie !== undefined || payload.raza !== undefined;
 
+  // Si cambia especie/raza, valida que el animal no tenga relaciones familiares
   if (needsFamilyValidation) {
     const hasParentsOrChildren = await Animal.exists({
       $or: [
@@ -458,6 +484,7 @@ const update = async (id, data, usuario) => {
     Animal.findByIdAndUpdate(id, payload, { new: true, runValidators: true })
   );
 
+  // Actualiza contadores de especie si cambió
   if (speciesChanged) {
     await Especie.findByIdAndUpdate(oldEspecieId, { $inc: { cantidadAnimales: -1 } });
     await Especie.findByIdAndUpdate(nextSpeciesId, { $inc: { cantidadAnimales: 1 } });
@@ -466,6 +493,7 @@ const update = async (id, data, usuario) => {
   return updated;
 };
 
+// DELETE /:id — soft delete: descuenta contadores en especie y raza
 const deactivate = async (id, usuario) => {
   const animal = await Animal.findById(id);
   if (!animal || !animal.active) {
@@ -484,6 +512,7 @@ const deactivate = async (id, usuario) => {
   return { ...animal.toObject(), active: false };
 };
 
+// GET /:id/family-tree — árbol genealógico con profundidad configurable
 const getTree = async (id, generations = DEFAULT_TREE_DEPTH, usuario) => {
   const maxDepth = parseDepth(generations);
   const animal = await getActiveAnimalOrThrow(id, usuario);
@@ -494,6 +523,7 @@ const getTree = async (id, generations = DEFAULT_TREE_DEPTH, usuario) => {
   };
 };
 
+// GET /:id/children — hijos directos del animal
 const getChildren = async (id, usuario) => {
   await getActiveAnimalOrThrow(id, usuario);
 
@@ -505,6 +535,7 @@ const getChildren = async (id, usuario) => {
   );
 };
 
+// GET /:id/siblings — hermanos (mismo padre Y madre, o al menos uno en común)
 const getSiblings = async (id, usuario) => {
   const animal = await getActiveAnimalOrThrow(id, usuario);
 
@@ -514,13 +545,15 @@ const getSiblings = async (id, usuario) => {
 
   const query = {
     active: true,
-    _id: { $ne: animal._id },
+    _id: { $ne: animal._id }, // Excluirse a sí mismo
   };
 
+  // Si tiene ambos padres, busca hermanos completos (mismo padre y madre)
   if (animal.padre && animal.madre) {
     query.padre = animal.padre._id || animal.padre;
     query.madre = animal.madre._id || animal.madre;
   } else {
+    // Si solo tiene un padre, busca medios hermanos
     query.$or = [];
     if (animal.padre) {
       query.$or.push({ padre: animal.padre._id || animal.padre });
@@ -535,6 +568,7 @@ const getSiblings = async (id, usuario) => {
   );
 };
 
+// POST /:id/parents — asigna o reemplaza padre/madre con validaciones
 const assignParents = async (id, data, usuario) => {
   const animal = await Animal.findById(id);
   if (!animal || !animal.active) {

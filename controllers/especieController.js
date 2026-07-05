@@ -1,14 +1,18 @@
+// Capa controlador: recibe las peticiones HTTP, delega en el servicio y responde JSON
 const especieService = require('../services/especieService');
 
+// GET /api/v1/especies — lista todas las especies activas
 const list = async (req, res, next) => {
   try {
     const especies = await especieService.list();
     res.json({ success: true, data: especies });
   } catch (err) {
+    // Pasa el error al manejador centralizado
     next(err);
   }
 };
 
+// POST /api/v1/especies — crea una nueva especie
 const create = async (req, res, next) => {
   try {
     const especie = await especieService.create(req.body);
@@ -18,6 +22,7 @@ const create = async (req, res, next) => {
   }
 };
 
+// GET /api/v1/especies/:id — obtiene una especie por su ID
 const getById = async (req, res, next) => {
   try {
     const especie = await especieService.getById(req.params.id);
@@ -27,6 +32,7 @@ const getById = async (req, res, next) => {
   }
 };
 
+// PUT /api/v1/especies/:id — actualiza una especie (nombre, descripción)
 const update = async (req, res, next) => {
   try {
     const especie = await especieService.update(req.params.id, req.body);
@@ -36,6 +42,7 @@ const update = async (req, res, next) => {
   }
 };
 
+// DELETE /api/v1/especies/:id — soft delete (marca active: false)
 const deactivate = async (req, res, next) => {
   try {
     const especie = await especieService.deactivate(req.params.id);

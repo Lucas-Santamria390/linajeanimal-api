@@ -1,14 +1,17 @@
+// Capa servicio: lógica de negocio de razas, separada del controlador HTTP
 const createError = require('../utils/createError');
 const Raza = require('../models/Raza');
 const Especie = require('../models/Especie');
 const Animal = require('../models/Animal');
 
+// GET — lista razas activas, opcionalmente filtradas por especie
 const list = async (filters = {}) => {
   const query = { active: true };
   if (filters.especie) query.especie = filters.especie;
   return Raza.find(query).populate('especie', 'nombre').sort({ nombre: 1 });
 };
 
+// POST — crea una raza validando que la especie exista y esté activa
 const create = async (data) => {
   const especie = await Especie.findById(data.especie);
   if (!especie || !especie.active) {
@@ -17,6 +20,7 @@ const create = async (data) => {
   return Raza.create(data);
 };
 
+// GET /:id — obtiene una raza por ID, valida que exista y esté activa
 const getById = async (id) => {
   const raza = await Raza.findById(id).populate('especie', 'nombre');
   if (!raza || !raza.active) {
@@ -25,6 +29,7 @@ const getById = async (id) => {
   return raza;
 };
 
+// PUT /:id — actualiza raza, valida especie destino y sincroniza nombre en animales
 const update = async (id, data) => {
   const raza = await Raza.findById(id);
   if (!raza || !raza.active) {
@@ -35,6 +40,7 @@ const update = async (id, data) => {
   for (const field of ALLOWED_FIELDS) {
     if (data[field] !== undefined) payload[field] = data[field];
   }
+  // Si cambia la especie, valida que la nueva exista
   if (payload.especie) {
     const especie = await Especie.findById(payload.especie);
     if (!especie || !especie.active) {
@@ -43,6 +49,7 @@ const update = async (id, data) => {
   }
   const razaActualizada = await Raza.findByIdAndUpdate(id, payload, { new: true, runValidators: true }).populate('especie', 'nombre');
 
+  // Sincroniza el nombre embebido en todos los animales de esta raza
   if (payload.nombre) {
     try {
       await Animal.updateMany(
@@ -57,6 +64,7 @@ const update = async (id, data) => {
   return razaActualizada;
 };
 
+// DELETE /:id — soft delete: bloquea si hay animales activos vinculados
 const deactivate = async (id) => {
   const dependencias = await Animal.exists({ 'raza._id': id, active: true });
   if (dependencias) {

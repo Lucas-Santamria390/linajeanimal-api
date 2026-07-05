@@ -1,13 +1,16 @@
+// Capa servicio: lógica de negocio de autenticación (register, login, logout, cambio de contraseña)
 const jwt = require('jsonwebtoken');
 const createError = require('../utils/createError');
 const Usuario = require('../models/Usuario');
 const config = require('../config/env');
 const { logSecurityEvent, EventTypes } = require('../middleware/securityLogger');
 
+// Genera un token JWT con id, rol y tokenVersion (para invalidar sesiones)
 const generateToken = (id, rol, tokenVersion = 0) => {
   return jwt.sign({ id, rol, tokenVersion }, config.jwtSecret, { expiresIn: '7d' });
 };
 
+// POST /register — crea usuario (siempre con rol 'user') y devuelve token
 const register = async (data) => {
   data.rol = 'user';
   const usuario = await Usuario.create(data);
@@ -20,6 +23,7 @@ const register = async (data) => {
   return { usuario, token };
 };
 
+// POST /login — autentica por email+password, valida active=true y devuelve token
 const login = async (email, password) => {
   const usuario = await Usuario.findOne({ email, active: true }).select('+password');
   if (!usuario) {
@@ -49,6 +53,7 @@ const login = async (email, password) => {
   return { usuario, token };
 };
 
+// PUT /change-password — cambia contraseña, valida la actual, incrementa tokenVersion
 const changePassword = async (usuarioId, currentPassword, newPassword) => {
   const usuario = await Usuario.findById(usuarioId).select('+password');
   if (!usuario || !usuario.active) {
@@ -67,7 +72,7 @@ const changePassword = async (usuarioId, currentPassword, newPassword) => {
   }
 
   usuario.password = newPassword;
-  usuario.tokenVersion += 1;
+  usuario.tokenVersion += 1; // Invalida todos los tokens anteriores
   await usuario.save();
 
   logSecurityEvent(EventTypes.PASSWORD_CHANGED, {
@@ -81,6 +86,7 @@ const changePassword = async (usuarioId, currentPassword, newPassword) => {
   return { usuario, token };
 };
 
+// POST /logout — incrementa tokenVersion para invalidar el token actual
 const logout = async (usuarioId) => {
   await Usuario.findByIdAndUpdate(usuarioId, { $inc: { tokenVersion: 1 } });
   logSecurityEvent(EventTypes.LOGOUT, {
@@ -89,6 +95,7 @@ const logout = async (usuarioId) => {
   });
 };
 
+// GET /profile — devuelve datos del usuario autenticado
 const getProfile = async (id) => {
   const usuario = await Usuario.findById(id);
   if (!usuario || !usuario.active) {
