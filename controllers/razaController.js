@@ -1,11 +1,12 @@
 // Capa controlador: recibe las peticiones HTTP, delega en el servicio y responde JSON
 const razaService = require('../services/razaService');
 
-// GET /api/v1/razas — lista todas las razas, opcionalmente filtradas por especie
+// GET /api/v1/razas — lista razas, opcionalmente filtradas por especie y active
 const list = async (req, res, next) => {
   try {
     const filters = {};
     if (req.query.especie) filters.especie = req.query.especie;
+    if (req.query.active !== undefined) filters.active = req.query.active;
     const razas = await razaService.list(filters);
     res.json({ success: true, data: razas });
   } catch (err) {
@@ -53,4 +54,14 @@ const deactivate = async (req, res, next) => {
   }
 };
 
-module.exports = { list, create, getById, update, deactivate };
+// PATCH /api/v1/razas/:id — activa o desactiva una raza
+const setActive = async (req, res, next) => {
+  try {
+    const raza = await razaService.setActive(req.params.id, req.body.active);
+    res.json({ success: true, data: raza });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { list, create, getById, update, deactivate, setActive };

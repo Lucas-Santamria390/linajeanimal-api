@@ -150,4 +150,59 @@ describe('Tests de Especies CRUD (API v1 Especies)', () => {
       }
     });
   });
+
+  // --- 6. REACTIVACIÓN (PATCH) ---
+  describe('PATCH /api/v1/especies/:id', () => {
+    it('Debería reactivar una especie desactivada (200)', async () => {
+      const nuevaEspecie = await request(app)
+        .post('/api/v1/especies')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ nombre: 'Reactivable', descripcion: 'Para test de reactivacion' });
+
+      const especieId = nuevaEspecie.body.data._id;
+
+      await request(app)
+        .delete(`/api/v1/especies/${especieId}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      const reactivarRes = await request(app)
+        .patch(`/api/v1/especies/${especieId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ active: true });
+
+      expect(reactivarRes.statusCode).toEqual(200);
+      expect(reactivarRes.body).toHaveProperty('success', true);
+      expect(reactivarRes.body.data.active).toEqual(true);
+
+      const getRes = await request(app).get(`/api/v1/especies/${especieId}`);
+      expect(getRes.statusCode).toEqual(200);
+    });
+
+    it('Debería rechazar PATCH sin token (401)', async () => {
+      const res = await request(app)
+        .patch(`/api/v1/especies/${new mongoose.Types.ObjectId()}`)
+        .send({ active: true });
+
+      expect(res.statusCode).toEqual(401);
+    });
+
+    it('Debería rechazar PATCH con active no booleano (400)', async () => {
+      const res = await request(app)
+        .patch(`/api/v1/especies/${new mongoose.Types.ObjectId()}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ active: 'no-booleano' });
+
+      expect(res.statusCode).toEqual(400);
+    });
+
+    it('Debería listar especies desactivadas con ?active=false (200)', async () => {
+      const res = await request(app).get('/api/v1/especies?active=false');
+
+      expect(res.statusCode).toEqual(200);
+      expect(Array.isArray(res.body.data)).toBe(true);
+      res.body.data.forEach(sp => {
+        expect(sp.active).toEqual(false);
+      });
+    });
+  });
 });

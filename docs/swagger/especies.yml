@@ -2,10 +2,16 @@ paths:
   /api/v1/especies:
     get:
       tags: [Especies]
-      summary: Listar especies activas
+      summary: Listar especies
+      parameters:
+        - in: query
+          name: active
+          schema:
+            type: boolean
+          description: Filtra por estado activo/inactivo (por defecto solo activas)
       responses:
         200:
-          description: Lista de especies activas
+          description: Lista de especies
           content:
             application/json:
               schema:
@@ -249,6 +255,78 @@ paths:
                 $ref: '#/components/schemas/Error'
         404:
           description: Especie no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags: [Especies]
+      summary: Activar o desactivar una especie
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID de la especie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [active]
+              properties:
+                active:
+                  type: boolean
+                  description: true para activar, false para desactivar
+      responses:
+        200:
+          description: Estado actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Especie'
+        400:
+          description: ID invalido o active no es booleano
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Sin permisos (se requiere rol admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Especie no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: No se puede desactivar porque tiene animales activos asociados
           content:
             application/json:
               schema:

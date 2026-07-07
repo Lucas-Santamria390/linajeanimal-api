@@ -272,21 +272,23 @@ npm run dev
 
 | Método | Ruta | Auth | Rol | Descripción |
 |--------|------|------|-----|-------------|
-| GET | `/api/v1/especies` | No | — | Listar especies |
+| GET | `/api/v1/especies` | No | — | Listar especies (filtro `?active=true/false`) |
 | GET | `/api/v1/especies/:id` | No | — | Detalle de especie |
 | POST | `/api/v1/especies` | Sí | admin | Crear especie |
 | PUT | `/api/v1/especies/:id` | Sí | admin | Actualizar especie |
 | DELETE | `/api/v1/especies/:id` | Sí | admin | Desactivar especie |
+| PATCH | `/api/v1/especies/:id` | Sí | admin | Activar/desactivar especie |
 
 ### Razas
 
 | Método | Ruta | Auth | Rol | Descripción |
 |--------|------|------|-----|-------------|
-| GET | `/api/v1/razas` | No | — | Listar razas (filtro `?especie=id`) |
+| GET | `/api/v1/razas` | No | — | Listar razas (filtros `?especie=id`, `?active=true/false`) |
 | GET | `/api/v1/razas/:id` | No | — | Detalle de raza |
 | POST | `/api/v1/razas` | Sí | admin | Crear raza |
 | PUT | `/api/v1/razas/:id` | Sí | admin | Actualizar raza |
 | DELETE | `/api/v1/razas/:id` | Sí | admin | Desactivar raza |
+| PATCH | `/api/v1/razas/:id` | Sí | admin | Activar/desactivar raza |
 
 ### Animales
 

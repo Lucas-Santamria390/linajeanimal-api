@@ -4,9 +4,14 @@ const Raza = require('../models/Raza');
 const Especie = require('../models/Especie');
 const Animal = require('../models/Animal');
 
-// GET — lista razas activas, opcionalmente filtradas por especie
+// GET — lista razas, opcionalmente filtradas por especie y active
 const list = async (filters = {}) => {
-  const query = { active: true };
+  const query = {};
+  if (filters.active !== undefined) {
+    query.active = filters.active;
+  } else {
+    query.active = true;
+  }
   if (filters.especie) query.especie = filters.especie;
   return Raza.find(query).populate('especie', 'nombre').sort({ nombre: 1 });
 };
@@ -77,4 +82,21 @@ const deactivate = async (id) => {
   return raza;
 };
 
-module.exports = { list, create, getById, update, deactivate };
+// PATCH /:id — activa o desactiva una raza (solo admin)
+const setActive = async (id, active) => {
+  const raza = await Raza.findById(id);
+  if (!raza) {
+    throw createError('Raza no encontrada', 404);
+  }
+
+  if (!active && raza.active) {
+    const dependencias = await Animal.exists({ 'raza._id': id, active: true });
+    if (dependencias) {
+      throw createError('No se puede desactivar la raza porque tiene animales activos asociados', 409);
+    }
+  }
+
+  return Raza.findByIdAndUpdate(id, { active }, { new: true });
+};
+
+module.exports = { list, create, getById, update, deactivate, setActive };

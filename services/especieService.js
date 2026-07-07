@@ -3,9 +3,15 @@ const createError = require('../utils/createError');
 const Especie = require('../models/Especie');
 const Animal = require('../models/Animal');
 
-// GET — lista especies activas ordenadas alfabéticamente
-const list = async () => {
-  return Especie.find({ active: true }).sort({ nombre: 1 });
+// GET — lista especies, opcionalmente filtradas por active (por defecto solo activas)
+const list = async (filters = {}) => {
+  const query = {};
+  if (filters.active !== undefined) {
+    query.active = filters.active;
+  } else {
+    query.active = true;
+  }
+  return Especie.find(query).sort({ nombre: 1 });
 };
 
 // POST — crea una nueva especie
@@ -63,4 +69,21 @@ const deactivate = async (id) => {
   return especie;
 };
 
-module.exports = { list, create, getById, update, deactivate };
+// PATCH /:id — activa o desactiva una especie (solo admin)
+const setActive = async (id, active) => {
+  const especie = await Especie.findById(id);
+  if (!especie) {
+    throw createError('Especie no encontrada', 404);
+  }
+
+  if (!active && especie.active) {
+    const dependencias = await Animal.exists({ 'especie._id': id, active: true });
+    if (dependencias) {
+      throw createError('No se puede desactivar la especie porque tiene animales activos asociados', 409);
+    }
+  }
+
+  return Especie.findByIdAndUpdate(id, { active }, { new: true });
+};
+
+module.exports = { list, create, getById, update, deactivate, setActive };

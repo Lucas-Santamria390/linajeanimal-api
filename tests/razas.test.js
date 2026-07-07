@@ -163,4 +163,59 @@ describe('Tests de Razas CRUD (API v1 Razas)', () => {
       }
     });
   });
+
+  // --- 6. REACTIVACIÓN (PATCH) ---
+  describe('PATCH /api/v1/razas/:id', () => {
+    it('Debería reactivar una raza desactivada (200)', async () => {
+      const nuevaRaza = await request(app)
+        .post('/api/v1/razas')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ nombre: 'Reactivable', especie: especieIdPadre });
+
+      const razaId = nuevaRaza.body.data._id;
+
+      await request(app)
+        .delete(`/api/v1/razas/${razaId}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      const reactivarRes = await request(app)
+        .patch(`/api/v1/razas/${razaId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ active: true });
+
+      expect(reactivarRes.statusCode).toEqual(200);
+      expect(reactivarRes.body).toHaveProperty('success', true);
+      expect(reactivarRes.body.data.active).toEqual(true);
+
+      const getRes = await request(app).get(`/api/v1/razas/${razaId}`);
+      expect(getRes.statusCode).toEqual(200);
+    });
+
+    it('Debería rechazar PATCH sin token (401)', async () => {
+      const res = await request(app)
+        .patch(`/api/v1/razas/${new mongoose.Types.ObjectId()}`)
+        .send({ active: true });
+
+      expect(res.statusCode).toEqual(401);
+    });
+
+    it('Debería rechazar PATCH con active no booleano (400)', async () => {
+      const res = await request(app)
+        .patch(`/api/v1/razas/${new mongoose.Types.ObjectId()}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ active: 'no-booleano' });
+
+      expect(res.statusCode).toEqual(400);
+    });
+
+    it('Debería listar razas desactivadas con ?active=false (200)', async () => {
+      const res = await request(app).get('/api/v1/razas?active=false');
+
+      expect(res.statusCode).toEqual(200);
+      expect(Array.isArray(res.body.data)).toBe(true);
+      res.body.data.forEach(r => {
+        expect(r.active).toEqual(false);
+      });
+    });
+  });
 });
